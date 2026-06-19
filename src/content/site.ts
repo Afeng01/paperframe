@@ -32,7 +32,7 @@ export const siteContent = siteContentSchema.parse({
   quote: {
     label: "Template note",
     value: "Shape the shell well enough that real content only needs files, not rewrites.",
-    author: "Editorial Frontsite",
+    author: "Paperframe",
   },
   contact: {
     title: "Swap in your details",

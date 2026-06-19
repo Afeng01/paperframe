@@ -1,33 +1,28 @@
 <svg width="1440" height="900" viewBox="0 0 1440 900" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <rect width="1440" height="900" fill="#F5F5F4"/>
-  <rect x="92" y="72" width="1256" height="756" rx="24" fill="white" stroke="#D6D3D1"/>
-  <rect x="140" y="118" width="1160" height="56" fill="white"/>
-  <text x="140" y="154" fill="#1C1917" font-family="Georgia, 'Times New Roman', serif" font-size="30" font-weight="700">Editorial Frontsite</text>
-  <text x="1000" y="152" fill="#78716C" font-family="'SFMono-Regular', Menlo, monospace" font-size="14" letter-spacing="3">ARTICLES</text>
-  <text x="1126" y="152" fill="#78716C" font-family="'SFMono-Regular', Menlo, monospace" font-size="14" letter-spacing="3">PROJECTS</text>
-  <text x="1248" y="152" fill="#78716C" font-family="'SFMono-Regular', Menlo, monospace" font-size="14" letter-spacing="3">ABOUT</text>
-  <rect x="140" y="206" width="1160" height="214" fill="#F5F5F4"/>
-  <text x="180" y="264" fill="#78716C" font-family="'SFMono-Regular', Menlo, monospace" font-size="14" letter-spacing="4">VOL.01</text>
-  <text x="180" y="336" fill="#1C1917" font-family="Georgia, 'Times New Roman', serif" font-size="62" font-weight="700">A calm editorial shell for</text>
-  <text x="180" y="410" fill="#1C1917" font-family="Georgia, 'Times New Roman', serif" font-size="62" font-weight="700">writing, projects, and services.</text>
-  <text x="180" y="456" fill="#57534E" font-family="Arial, sans-serif" font-size="24">Next.js App Router template with local MDX collections, seeded content, and share-ready metadata routes.</text>
-  <rect x="140" y="468" width="360" height="132" fill="#1C1917"/>
-  <text x="172" y="518" fill="#F5F5F4" font-family="'SFMono-Regular', Menlo, monospace" font-size="14" letter-spacing="4">RECENT WRITING</text>
-  <text x="172" y="558" fill="white" font-family="Georgia, 'Times New Roman', serif" font-size="30" font-weight="700">Seed content still</text>
-  <text x="172" y="594" fill="white" font-family="Georgia, 'Times New Roman', serif" font-size="30" font-weight="700">needs structure</text>
-  <rect x="528" y="468" width="240" height="132" fill="white" stroke="#E7E5E4"/>
-  <rect x="794" y="468" width="240" height="132" fill="white" stroke="#E7E5E4"/>
-  <rect x="1060" y="468" width="240" height="132" fill="white" stroke="#E7E5E4"/>
-  <text x="556" y="514" fill="#1C1917" font-family="Georgia, 'Times New Roman', serif" font-size="22" font-weight="700">Projects</text>
-  <text x="556" y="548" fill="#57534E" font-family="Arial, sans-serif" font-size="17">Card grid and detail</text>
-  <text x="556" y="572" fill="#57534E" font-family="Arial, sans-serif" font-size="17">pages ready for swaps</text>
-  <text x="822" y="514" fill="#1C1917" font-family="Georgia, 'Times New Roman', serif" font-size="22" font-weight="700">Services</text>
-  <text x="822" y="548" fill="#57534E" font-family="Arial, sans-serif" font-size="17">Simple offer section</text>
-  <text x="822" y="572" fill="#57534E" font-family="Arial, sans-serif" font-size="17">without product bloat</text>
-  <text x="1088" y="514" fill="#1C1917" font-family="Georgia, 'Times New Roman', serif" font-size="22" font-weight="700">Metadata</text>
-  <text x="1088" y="548" fill="#57534E" font-family="Arial, sans-serif" font-size="17">Sitemap, robots, OG,</text>
-  <text x="1088" y="572" fill="#57534E" font-family="Arial, sans-serif" font-size="17">icons, manifest</text>
-  <rect x="140" y="636" width="1160" height="138" fill="white" stroke="#E7E5E4"/>
-  <text x="180" y="688" fill="#1C1917" font-family="Georgia, 'Times New Roman', serif" font-size="30" font-weight="700">Publish as a reusable frontsite starter, then fill in the real public story.</text>
-  <text x="180" y="730" fill="#57534E" font-family="Arial, sans-serif" font-size="22">Template productization first. Real content, art direction, and dynamic tools later.</text>
+  <rect width="1440" height="900" fill="#EEE7DC"/>
+  <rect x="84" y="68" width="1272" height="764" rx="26" fill="#FAF8F2" stroke="#1C1917" stroke-opacity="0.14"/>
+  <line x1="136" y1="136.5" x2="1304" y2="136.5" stroke="#1C1917" stroke-opacity="0.14"/>
+  <text x="136" y="112" fill="#6B6257" font-family="'SFMono-Regular', Menlo, monospace" font-size="14" letter-spacing="4">PAPERFRAME</text>
+  <text x="1112" y="112" fill="#6B6257" font-family="'SFMono-Regular', Menlo, monospace" font-size="14" letter-spacing="3">ARTICLES</text>
+  <text x="1216" y="112" fill="#6B6257" font-family="'SFMono-Regular', Menlo, monospace" font-size="14" letter-spacing="3">PROJECTS</text>
+  <text x="1312" y="112" fill="#6B6257" font-family="'SFMono-Regular', Menlo, monospace" font-size="14" text-anchor="end" letter-spacing="3">ABOUT</text>
+  <rect x="136" y="190" width="750" height="428" fill="#F3ECE1"/>
+  <text x="186" y="238" fill="#6B6257" font-family="'SFMono-Regular', Menlo, monospace" font-size="14" letter-spacing="4">VOL. 01 / FRONTSITE TEMPLATE</text>
+  <text x="186" y="338" fill="#1C1917" font-family="Georgia, 'Times New Roman', serif" font-size="70" font-weight="700">A quiet publication</text>
+  <text x="186" y="418" fill="#1C1917" font-family="Georgia, 'Times New Roman', serif" font-size="70" font-weight="700">shell for personal</text>
+  <text x="186" y="498" fill="#1C1917" font-family="Georgia, 'Times New Roman', serif" font-size="70" font-weight="700">writing and work.</text>
+  <text x="186" y="556" fill="#4F463D" font-family="Arial, sans-serif" font-size="24">Next.js App Router, local MDX collections, and a calm editorial rhythm.</text>
+  <rect x="936" y="190" width="368" height="206" fill="#1C1917"/>
+  <text x="972" y="238" fill="#EDE7DB" font-family="'SFMono-Regular', Menlo, monospace" font-size="13" letter-spacing="4">WHAT'S INSIDE</text>
+  <text x="972" y="292" fill="white" font-family="Georgia, 'Times New Roman', serif" font-size="34" font-weight="700">Articles, projects,</text>
+  <text x="972" y="332" fill="white" font-family="Georgia, 'Times New Roman', serif" font-size="34" font-weight="700">services, metadata,</text>
+  <text x="972" y="372" fill="white" font-family="Georgia, 'Times New Roman', serif" font-size="34" font-weight="700">and seeded content.</text>
+  <rect x="936" y="428" width="368" height="190" fill="#F7F2E9" stroke="#1C1917" stroke-opacity="0.08"/>
+  <text x="972" y="474" fill="#6B6257" font-family="'SFMono-Regular', Menlo, monospace" font-size="13" letter-spacing="4">POSITIONING</text>
+  <text x="972" y="532" fill="#1C1917" font-family="Georgia, 'Times New Roman', serif" font-size="34" font-weight="700">Template first.</text>
+  <text x="972" y="572" fill="#1C1917" font-family="Georgia, 'Times New Roman', serif" font-size="34" font-weight="700">Real story later.</text>
+  <text x="972" y="607" fill="#4F463D" font-family="Arial, sans-serif" font-size="18">Fork the shell, then fill it with a real point of view.</text>
+  <line x1="136" y1="676.5" x2="1304" y2="676.5" stroke="#1C1917" stroke-opacity="0.14"/>
+  <text x="136" y="726" fill="#6B6257" font-family="'SFMono-Regular', Menlo, monospace" font-size="14" letter-spacing="3">STACK</text>
+  <text x="136" y="770" fill="#1C1917" font-family="Georgia, 'Times New Roman', serif" font-size="36" font-weight="700">Next.js App Router / Tailwind CSS 4 / local MDX / share-ready metadata</text>
 </svg>

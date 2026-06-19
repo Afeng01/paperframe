@@ -1,12 +1,12 @@
-# Next Editorial Frontsite Template
+# Paperframe
 
-Editorial-style personal frontsite starter built with Next.js App Router,
-Tailwind CSS, and local MDX collections.
+Editorial-style personal site template built with Next.js App Router, Tailwind
+CSS, and local MDX collections.
 
-![Template preview](docs/assets/template-preview.svg)
+![Paperframe preview](docs/assets/template-preview.svg)
 
-This template is designed for people who want a public site that feels more
-like a calm publication than a generic startup landing page.
+Paperframe is designed for people who want a public site that feels more like a
+small publication than a generic startup landing page.
 
 ## Included surfaces
 

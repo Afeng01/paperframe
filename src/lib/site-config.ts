@@ -1,6 +1,6 @@
 export const siteConfig = {
-  name: "Editorial Frontsite",
-  shortName: "Frontsite",
+  name: "Paperframe",
+  shortName: "Paperframe",
   description:
     "An editorial-style personal site template built with Next.js App Router, Tailwind CSS, and local MDX collections.",
   url: "https://example.com",
