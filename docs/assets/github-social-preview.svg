@@ -1,0 +1,26 @@
+<svg width="1280" height="640" viewBox="0 0 1280 640" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1280" height="640" fill="#F5F5F4"/>
+  <rect x="56" y="48" width="1168" height="544" rx="20" fill="white" stroke="#D6D3D1"/>
+  <text x="96" y="108" fill="#1C1917" font-family="Georgia, 'Times New Roman', serif" font-size="30" font-weight="700">Next Editorial Frontsite Template</text>
+  <text x="97" y="150" fill="#57534E" font-family="Arial, sans-serif" font-size="22">Editorial-style personal frontsite starter for writing, projects, and service pages.</text>
+  <rect x="96" y="188" width="1088" height="180" fill="#F5F5F4"/>
+  <text x="132" y="234" fill="#78716C" font-family="'SFMono-Regular', Menlo, monospace" font-size="13" letter-spacing="4">VOL.01</text>
+  <text x="132" y="286" fill="#1C1917" font-family="Georgia, 'Times New Roman', serif" font-size="54" font-weight="700">A calm publication shell</text>
+  <text x="132" y="348" fill="#1C1917" font-family="Georgia, 'Times New Roman', serif" font-size="54" font-weight="700">built with Next.js and MDX.</text>
+  <text x="132" y="390" fill="#57534E" font-family="Arial, sans-serif" font-size="21">App Router, Tailwind CSS 4, local content collections, and seeded article, project, and service flows.</text>
+  <rect x="96" y="404" width="332" height="138" fill="#1C1917"/>
+  <text x="126" y="432" fill="#F5F5F4" font-family="'SFMono-Regular', Menlo, monospace" font-size="12" letter-spacing="4">INCLUDED</text>
+  <text x="126" y="472" fill="white" font-family="Georgia, 'Times New Roman', serif" font-size="30" font-weight="700">Home, About,</text>
+  <text x="126" y="507" fill="white" font-family="Georgia, 'Times New Roman', serif" font-size="30" font-weight="700">Articles, Projects,</text>
+  <text x="126" y="542" fill="white" font-family="Georgia, 'Times New Roman', serif" font-size="30" font-weight="700">Services</text>
+  <rect x="458" y="404" width="332" height="138" fill="white" stroke="#E7E5E4"/>
+  <text x="488" y="432" fill="#78716C" font-family="'SFMono-Regular', Menlo, monospace" font-size="12" letter-spacing="4">METADATA</text>
+  <text x="488" y="472" fill="#1C1917" font-family="Georgia, 'Times New Roman', serif" font-size="28" font-weight="700">Sitemap, robots,</text>
+  <text x="488" y="506" fill="#1C1917" font-family="Georgia, 'Times New Roman', serif" font-size="28" font-weight="700">Open Graph, icons,</text>
+  <text x="488" y="540" fill="#1C1917" font-family="Georgia, 'Times New Roman', serif" font-size="28" font-weight="700">manifest</text>
+  <rect x="820" y="404" width="364" height="138" fill="white" stroke="#E7E5E4"/>
+  <text x="850" y="432" fill="#78716C" font-family="'SFMono-Regular', Menlo, monospace" font-size="12" letter-spacing="4">POSITIONING</text>
+  <text x="850" y="472" fill="#1C1917" font-family="Georgia, 'Times New Roman', serif" font-size="28" font-weight="700">Template first.</text>
+  <text x="850" y="506" fill="#1C1917" font-family="Georgia, 'Times New Roman', serif" font-size="28" font-weight="700">Real story later.</text>
+  <text x="850" y="540" fill="#57534E" font-family="Arial, sans-serif" font-size="18">Use the template repo as upstream, then fork your real site.</text>
+</svg>
