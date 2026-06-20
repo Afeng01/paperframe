@@ -2,7 +2,7 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { createContentLoaders } from "@/lib/content/loaders";
 
@@ -151,6 +151,39 @@ describe("content loaders", () => {
     await expect(loaders.getAllArticles("en")).rejects.toThrow(
       'Duplicate localized entry for articles translationKey "article-01" and locale "en"',
     );
+  });
+
+  it("rejects malformed collection locale suffixes instead of treating them as default locale", async () => {
+    for (const suffix of ["zh_CN", "zhHans"]) {
+      const contentRoot = await createContentRoot();
+
+      await writeArticleFixture(contentRoot, `article-01.${suffix}.mdx`);
+
+      const loaders = createContentLoaders(contentRoot);
+
+      await expect(loaders.getAllArticles("en")).rejects.toThrow(
+        `Unsupported locale suffix "${suffix}" in content file "article-01.${suffix}.mdx"`,
+      );
+    }
+  });
+
+  it("memoizes parsed collection entries per loader instance", async () => {
+    const contentRoot = await createContentRoot();
+
+    await writeArticleFixture(contentRoot, "article-01.en.mdx");
+    await writeArticleFixture(contentRoot, "article-01.zh.mdx");
+
+    const readFileSpy = vi.spyOn(fs, "readFile");
+    const loaders = createContentLoaders(contentRoot);
+
+    try {
+      await loaders.getAllArticles("en");
+      await loaders.getArticleBySlug("shared-article", "zh");
+
+      expect(readFileSpy).toHaveBeenCalledTimes(2);
+    } finally {
+      readFileSpy.mockRestore();
+    }
   });
 
   it("matches the same slug across locales", async () => {

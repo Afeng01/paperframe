@@ -20,7 +20,6 @@ import { DEFAULT_LOCALE, isSupportedLocale, type Locale } from "@/lib/i18n/local
 
 const DEFAULT_CONTENT_ROOT = path.join(process.cwd(), "src", "content");
 const MDX_EXTENSION = ".mdx";
-const LOCALE_SUFFIX_PATTERN = /^[a-z]{2}(?:-[a-z]{2})?$/i;
 
 type ContentEntry<T> = T & LocalizedContentFields & { body: string };
 type InternalContentEntry<T> = ContentEntry<T> & { sourceFileName: string };
@@ -67,14 +66,7 @@ function parseContentFileName(fileName: string): ParsedFileName {
     };
   }
 
-  if (LOCALE_SUFFIX_PATTERN.test(localeSuffix)) {
-    throw new Error(`Unsupported locale suffix "${localeSuffix}" in content file "${fileName}"`);
-  }
-
-  return {
-    locale: DEFAULT_LOCALE,
-    translationKey: baseName,
-  };
+  throw new Error(`Unsupported locale suffix "${localeSuffix}" in content file "${fileName}"`);
 }
 
 async function readEntryFile<T>(
@@ -282,6 +274,47 @@ function findEntryBySlug<T extends LocalizedContentFields & { slug: string }>(
 }
 
 export function createContentLoaders(contentRoot = DEFAULT_CONTENT_ROOT): ContentLoaders {
+  const collectionCache = new Map<string, Promise<unknown>>();
+  const namedEntryCache = new Map<string, Promise<unknown>>();
+
+  async function loadCollection<T>(
+    directory: string,
+    parseFrontmatter: FrontmatterParser<T>,
+  ): Promise<Array<InternalContentEntry<T>>> {
+    const cacheKey = `collection:${directory}`;
+    const cachedEntries = collectionCache.get(cacheKey) as
+      | Promise<Array<InternalContentEntry<T>>>
+      | undefined;
+
+    if (cachedEntries) {
+      return cachedEntries;
+    }
+
+    const entriesPromise = readCollectionEntries(contentRoot, directory, parseFrontmatter);
+    collectionCache.set(cacheKey, entriesPromise);
+
+    return entriesPromise;
+  }
+
+  async function loadNamedEntry<T>(
+    entryName: string,
+    parseFrontmatter: FrontmatterParser<T>,
+  ): Promise<Array<InternalContentEntry<T>>> {
+    const cacheKey = `named:${entryName}`;
+    const cachedEntries = namedEntryCache.get(cacheKey) as
+      | Promise<Array<InternalContentEntry<T>>>
+      | undefined;
+
+    if (cachedEntries) {
+      return cachedEntries;
+    }
+
+    const entriesPromise = readNamedEntries(contentRoot, entryName, parseFrontmatter);
+    namedEntryCache.set(cacheKey, entriesPromise);
+
+    return entriesPromise;
+  }
+
   return {
     async getSiteContent() {
       return siteContent;
@@ -289,7 +322,7 @@ export function createContentLoaders(contentRoot = DEFAULT_CONTENT_ROOT): Conten
 
     async getAboutEntry(locale) {
       const requestedLocale = requireLocale(locale, "getAboutEntry");
-      const entries = await readNamedEntries(contentRoot, "about", (value) =>
+      const entries = await loadNamedEntry("about", (value) =>
         aboutFrontmatterSchema.parse(value),
       );
       assertUniqueLocalizedEntries(entries, "about");
@@ -310,7 +343,7 @@ export function createContentLoaders(contentRoot = DEFAULT_CONTENT_ROOT): Conten
 
     async getAllArticles(locale) {
       const requestedLocale = requireLocale(locale, "getAllArticles");
-      const entries = await readCollectionEntries(contentRoot, "articles", (value) =>
+      const entries = await loadCollection("articles", (value) =>
         articleFrontmatterSchema.parse(value),
       );
       assertUniqueLocalizedEntries(entries, "articles");
@@ -321,7 +354,7 @@ export function createContentLoaders(contentRoot = DEFAULT_CONTENT_ROOT): Conten
 
     async getAllProjects(locale) {
       const requestedLocale = requireLocale(locale, "getAllProjects");
-      const entries = await readCollectionEntries(contentRoot, "projects", (value) =>
+      const entries = await loadCollection("projects", (value) =>
         projectFrontmatterSchema.parse(value),
       );
       assertUniqueLocalizedEntries(entries, "projects");
@@ -332,7 +365,7 @@ export function createContentLoaders(contentRoot = DEFAULT_CONTENT_ROOT): Conten
 
     async getAllServices(locale) {
       const requestedLocale = requireLocale(locale, "getAllServices");
-      const entries = await readCollectionEntries(contentRoot, "services", (value) =>
+      const entries = await loadCollection("services", (value) =>
         serviceFrontmatterSchema.parse(value),
       );
       assertUniqueLocalizedEntries(entries, "services");
@@ -343,7 +376,7 @@ export function createContentLoaders(contentRoot = DEFAULT_CONTENT_ROOT): Conten
 
     async getArticleBySlug(slug, locale) {
       const requestedLocale = requireLocale(locale, "getArticleBySlug");
-      const entries = await readCollectionEntries(contentRoot, "articles", (value) =>
+      const entries = await loadCollection("articles", (value) =>
         articleFrontmatterSchema.parse(value),
       );
       assertUniqueLocalizedEntries(entries, "articles");
@@ -354,7 +387,7 @@ export function createContentLoaders(contentRoot = DEFAULT_CONTENT_ROOT): Conten
 
     async getProjectBySlug(slug, locale) {
       const requestedLocale = requireLocale(locale, "getProjectBySlug");
-      const entries = await readCollectionEntries(contentRoot, "projects", (value) =>
+      const entries = await loadCollection("projects", (value) =>
         projectFrontmatterSchema.parse(value),
       );
       assertUniqueLocalizedEntries(entries, "projects");
@@ -365,7 +398,7 @@ export function createContentLoaders(contentRoot = DEFAULT_CONTENT_ROOT): Conten
 
     async getServiceBySlug(slug, locale) {
       const requestedLocale = requireLocale(locale, "getServiceBySlug");
-      const entries = await readCollectionEntries(contentRoot, "services", (value) =>
+      const entries = await loadCollection("services", (value) =>
         serviceFrontmatterSchema.parse(value),
       );
       assertUniqueLocalizedEntries(entries, "services");
@@ -376,6 +409,8 @@ export function createContentLoaders(contentRoot = DEFAULT_CONTENT_ROOT): Conten
   };
 }
 
+// These top-level exports are legacy compatibility shims for the current route layer only.
+// New callers should prefer createContentLoaders(...), which requires an explicit locale.
 const defaultLoaders = createContentLoaders();
 
 export const getSiteContent = defaultLoaders.getSiteContent;
