@@ -32,13 +32,13 @@ interface ParsedFileName {
 
 export interface ContentLoaders {
   getSiteContent(): Promise<SiteContent>;
-  getAboutEntry(locale?: Locale): Promise<AboutEntry>;
-  getAllArticles(locale?: Locale): Promise<ArticleEntry[]>;
-  getAllProjects(locale?: Locale): Promise<ProjectEntry[]>;
-  getAllServices(locale?: Locale): Promise<ServiceEntry[]>;
-  getArticleBySlug(slug: string, locale?: Locale): Promise<ArticleEntry | undefined>;
-  getProjectBySlug(slug: string, locale?: Locale): Promise<ProjectEntry | undefined>;
-  getServiceBySlug(slug: string, locale?: Locale): Promise<ServiceEntry | undefined>;
+  getAboutEntry(locale: Locale): Promise<AboutEntry>;
+  getAllArticles(locale: Locale): Promise<ArticleEntry[]>;
+  getAllProjects(locale: Locale): Promise<ProjectEntry[]>;
+  getAllServices(locale: Locale): Promise<ServiceEntry[]>;
+  getArticleBySlug(slug: string, locale: Locale): Promise<ArticleEntry | undefined>;
+  getProjectBySlug(slug: string, locale: Locale): Promise<ProjectEntry | undefined>;
+  getServiceBySlug(slug: string, locale: Locale): Promise<ServiceEntry | undefined>;
 }
 
 function parseContentFileName(fileName: string): ParsedFileName {
@@ -132,6 +132,14 @@ function filterEntriesByLocale<T extends LocalizedContentFields>(
   return entries.filter((entry) => entry.locale === locale);
 }
 
+function requireLocale(locale: Locale | undefined, loaderName: string): Locale {
+  if (locale) {
+    return locale;
+  }
+
+  throw new Error(`Locale is required for localized content loader "${loaderName}"`);
+}
+
 function createMissingLocaleError(
   collection: string,
   slug: string,
@@ -143,6 +151,47 @@ function createMissingLocaleError(
   return new Error(
     `Missing locale "${locale}" for ${collection} slug "${slug}". Available locales: ${locales}.`,
   );
+}
+
+function createSlugMismatchError(
+  collection: string,
+  translationKey: string,
+  expectedSlug: string,
+  locale: Locale,
+  actualSlug: string,
+): Error {
+  return new Error(
+    `Slug mismatch for ${collection} translationKey "${translationKey}": expected slug "${expectedSlug}", but locale "${locale}" uses "${actualSlug}".`,
+  );
+}
+
+function assertStableLocalizedSlugs<T extends LocalizedContentFields & { slug: string }>(
+  entries: T[],
+  collection: string,
+): void {
+  const slugByTranslationKey = new Map<string, { locale: Locale; slug: string }>();
+
+  for (const entry of entries) {
+    const existing = slugByTranslationKey.get(entry.translationKey);
+
+    if (!existing) {
+      slugByTranslationKey.set(entry.translationKey, {
+        locale: entry.locale,
+        slug: entry.slug,
+      });
+      continue;
+    }
+
+    if (existing.slug !== entry.slug) {
+      throw createSlugMismatchError(
+        collection,
+        entry.translationKey,
+        existing.slug,
+        entry.locale,
+        entry.slug,
+      );
+    }
+  }
 }
 
 function findEntryBySlug<T extends LocalizedContentFields & { slug: string }>(
@@ -174,11 +223,12 @@ export function createContentLoaders(contentRoot = DEFAULT_CONTENT_ROOT): Conten
       return siteContent;
     },
 
-    async getAboutEntry(locale = DEFAULT_LOCALE) {
+    async getAboutEntry(locale) {
+      const requestedLocale = requireLocale(locale, "getAboutEntry");
       const entries = await readNamedEntries(contentRoot, "about", (value) =>
         aboutFrontmatterSchema.parse(value),
       );
-      const localizedEntry = entries.find((entry) => entry.locale === locale);
+      const localizedEntry = entries.find((entry) => entry.locale === requestedLocale);
 
       if (localizedEntry) {
         return localizedEntry;
@@ -187,58 +237,70 @@ export function createContentLoaders(contentRoot = DEFAULT_CONTENT_ROOT): Conten
       const availableLocales = entries.map((entry) => entry.locale);
 
       if (availableLocales.length > 0) {
-        throw createMissingLocaleError("about", "about", locale, availableLocales);
+        throw createMissingLocaleError("about", "about", requestedLocale, availableLocales);
       }
 
       throw new Error('Missing content entry "about"');
     },
 
-    async getAllArticles(locale = DEFAULT_LOCALE) {
+    async getAllArticles(locale) {
+      const requestedLocale = requireLocale(locale, "getAllArticles");
       const entries = await readCollectionEntries(contentRoot, "articles", (value) =>
         articleFrontmatterSchema.parse(value),
       );
+      assertStableLocalizedSlugs(entries, "articles");
 
-      return filterEntriesByLocale(entries, locale);
+      return filterEntriesByLocale(entries, requestedLocale);
     },
 
-    async getAllProjects(locale = DEFAULT_LOCALE) {
+    async getAllProjects(locale) {
+      const requestedLocale = requireLocale(locale, "getAllProjects");
       const entries = await readCollectionEntries(contentRoot, "projects", (value) =>
         projectFrontmatterSchema.parse(value),
       );
+      assertStableLocalizedSlugs(entries, "projects");
 
-      return filterEntriesByLocale(entries, locale);
+      return filterEntriesByLocale(entries, requestedLocale);
     },
 
-    async getAllServices(locale = DEFAULT_LOCALE) {
+    async getAllServices(locale) {
+      const requestedLocale = requireLocale(locale, "getAllServices");
       const entries = await readCollectionEntries(contentRoot, "services", (value) =>
         serviceFrontmatterSchema.parse(value),
       );
+      assertStableLocalizedSlugs(entries, "services");
 
-      return filterEntriesByLocale(entries, locale);
+      return filterEntriesByLocale(entries, requestedLocale);
     },
 
-    async getArticleBySlug(slug, locale = DEFAULT_LOCALE) {
+    async getArticleBySlug(slug, locale) {
+      const requestedLocale = requireLocale(locale, "getArticleBySlug");
       const entries = await readCollectionEntries(contentRoot, "articles", (value) =>
         articleFrontmatterSchema.parse(value),
       );
+      assertStableLocalizedSlugs(entries, "articles");
 
-      return findEntryBySlug(entries, "articles", slug, locale);
+      return findEntryBySlug(entries, "articles", slug, requestedLocale);
     },
 
-    async getProjectBySlug(slug, locale = DEFAULT_LOCALE) {
+    async getProjectBySlug(slug, locale) {
+      const requestedLocale = requireLocale(locale, "getProjectBySlug");
       const entries = await readCollectionEntries(contentRoot, "projects", (value) =>
         projectFrontmatterSchema.parse(value),
       );
+      assertStableLocalizedSlugs(entries, "projects");
 
-      return findEntryBySlug(entries, "projects", slug, locale);
+      return findEntryBySlug(entries, "projects", slug, requestedLocale);
     },
 
-    async getServiceBySlug(slug, locale = DEFAULT_LOCALE) {
+    async getServiceBySlug(slug, locale) {
+      const requestedLocale = requireLocale(locale, "getServiceBySlug");
       const entries = await readCollectionEntries(contentRoot, "services", (value) =>
         serviceFrontmatterSchema.parse(value),
       );
+      assertStableLocalizedSlugs(entries, "services");
 
-      return findEntryBySlug(entries, "services", slug, locale);
+      return findEntryBySlug(entries, "services", slug, requestedLocale);
     },
   };
 }
@@ -246,10 +308,31 @@ export function createContentLoaders(contentRoot = DEFAULT_CONTENT_ROOT): Conten
 const defaultLoaders = createContentLoaders();
 
 export const getSiteContent = defaultLoaders.getSiteContent;
-export const getAboutEntry = defaultLoaders.getAboutEntry;
-export const getAllArticles = defaultLoaders.getAllArticles;
-export const getAllProjects = defaultLoaders.getAllProjects;
-export const getAllServices = defaultLoaders.getAllServices;
-export const getArticleBySlug = defaultLoaders.getArticleBySlug;
-export const getProjectBySlug = defaultLoaders.getProjectBySlug;
-export const getServiceBySlug = defaultLoaders.getServiceBySlug;
+
+export function getAboutEntry(): Promise<AboutEntry> {
+  return defaultLoaders.getAboutEntry(DEFAULT_LOCALE);
+}
+
+export function getAllArticles(): Promise<ArticleEntry[]> {
+  return defaultLoaders.getAllArticles(DEFAULT_LOCALE);
+}
+
+export function getAllProjects(): Promise<ProjectEntry[]> {
+  return defaultLoaders.getAllProjects(DEFAULT_LOCALE);
+}
+
+export function getAllServices(): Promise<ServiceEntry[]> {
+  return defaultLoaders.getAllServices(DEFAULT_LOCALE);
+}
+
+export function getArticleBySlug(slug: string): Promise<ArticleEntry | undefined> {
+  return defaultLoaders.getArticleBySlug(slug, DEFAULT_LOCALE);
+}
+
+export function getProjectBySlug(slug: string): Promise<ProjectEntry | undefined> {
+  return defaultLoaders.getProjectBySlug(slug, DEFAULT_LOCALE);
+}
+
+export function getServiceBySlug(slug: string): Promise<ServiceEntry | undefined> {
+  return defaultLoaders.getServiceBySlug(slug, DEFAULT_LOCALE);
+}

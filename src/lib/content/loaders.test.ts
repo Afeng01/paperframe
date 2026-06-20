@@ -58,6 +58,18 @@ afterEach(async () => {
 });
 
 describe("content loaders", () => {
+  it("requires an explicit locale in the core loader API", async () => {
+    const contentRoot = await createContentRoot();
+
+    await writeArticleFixture(contentRoot, "article-01.en.mdx");
+
+    const loaders = createContentLoaders(contentRoot);
+
+    await expect(
+      (loaders.getAllArticles as unknown as () => Promise<unknown>)(),
+    ).rejects.toThrow('Locale is required for localized content loader "getAllArticles"');
+  });
+
   it("selects article-01.en.mdx for locale en", async () => {
     const contentRoot = await createContentRoot();
 
@@ -139,6 +151,23 @@ describe("content loaders", () => {
 
     await expect(loaders.getArticleBySlug("shared-article", "zh")).rejects.toThrow(
       'Missing locale "zh" for articles slug "shared-article"',
+    );
+  });
+
+  it("throws a clear error when locale siblings drift on slug", async () => {
+    const contentRoot = await createContentRoot();
+
+    await writeArticleFixture(contentRoot, "article-01.en.mdx", {
+      slug: "shared-article",
+    });
+    await writeArticleFixture(contentRoot, "article-01.zh.mdx", {
+      slug: "different-article",
+    });
+
+    const loaders = createContentLoaders(contentRoot);
+
+    await expect(loaders.getAllArticles("en")).rejects.toThrow(
+      'Slug mismatch for articles translationKey "article-01"',
     );
   });
 });
