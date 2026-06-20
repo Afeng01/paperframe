@@ -15,9 +15,9 @@
 Planned file map before implementation:
 
 - Modify: `/Users/cherry_xiao/Developer/xiao12-top/package.json`
-- Modify: `/Users/cherry_xiao/Developer/xiao12-top/.gitignore`
 - Create: `/Users/cherry_xiao/Developer/xiao12-top/vitest.config.ts`
 - Create: `/Users/cherry_xiao/Developer/xiao12-top/src/test/setup.ts`
+- Create: `/Users/cherry_xiao/Developer/xiao12-top/src/test/smoke.test.tsx`
 - Create: `/Users/cherry_xiao/Developer/xiao12-top/src/lib/i18n/locales.ts`
 - Create: `/Users/cherry_xiao/Developer/xiao12-top/src/lib/i18n/resolve-locale.ts`
 - Create: `/Users/cherry_xiao/Developer/xiao12-top/src/lib/i18n/locale-cookie.ts`
@@ -82,9 +82,9 @@ Design rules locked by this structure:
 
 **Files:**
 - Modify: `/Users/cherry_xiao/Developer/xiao12-top/package.json`
-- Modify: `/Users/cherry_xiao/Developer/xiao12-top/.gitignore`
 - Create: `/Users/cherry_xiao/Developer/xiao12-top/vitest.config.ts`
 - Create: `/Users/cherry_xiao/Developer/xiao12-top/src/test/setup.ts`
+- Create: `/Users/cherry_xiao/Developer/xiao12-top/src/test/smoke.test.tsx`
 
 - [ ] **Step 1: Install the smallest useful test toolchain**
 
@@ -101,14 +101,18 @@ Expected: dev dependencies are added without changing app runtime dependencies.
 Update `package.json` to include:
 - `test`: `vitest run`
 - `test:watch`: `vitest`
+- `engines.node`: explicit floor matching the installed Vitest/Vite toolchain
 
 Expected: locale and component tests can be run independently from `lint`, `typecheck`, and `build`.
 
-- [ ] **Step 3: Add Vitest config and shared setup**
+- [ ] **Step 3: Add Vitest config and shared DOM test setup**
 
-Implement `vitest.config.ts` and `src/test/setup.ts` so component tests run in `jsdom` and automatically load `@testing-library/jest-dom`.
+Implement `vitest.config.ts` and `src/test/setup.ts` so:
+- Vitest defaults to `node` for non-UI tests
+- DOM/UI tests can opt into `jsdom`
+- DOM/UI tests can import one shared setup module to load `@testing-library/jest-dom` and cleanup
 
-- [ ] **Step 4: Verify the empty harness boots**
+- [ ] **Step 4: Verify the harness boots with a baseline smoke test**
 
 Run:
 
@@ -116,12 +120,12 @@ Run:
 npm run test
 ```
 
-Expected: Vitest starts successfully and exits cleanly with no discovered tests yet.
+Expected: Vitest starts successfully and runs a minimal smoke test with exit code `0`.
 
 - [ ] **Step 5: Commit the testing baseline**
 
 ```bash
-git add package.json package-lock.json vitest.config.ts src/test/setup.ts .gitignore
+git add package.json package-lock.json vitest.config.ts src/test/setup.ts src/test/smoke.test.tsx
 git commit -m "chore: add bilingual test baseline"
 ```
 
