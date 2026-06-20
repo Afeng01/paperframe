@@ -24,6 +24,19 @@ function readZIndexForSelector(selector: string) {
   return Number(zIndexMatch[1]);
 }
 
+function readCssBlock(selector: string) {
+  const css = readFileSync(globalsCssPath, "utf8");
+  const escapedSelector = selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const blockPattern = new RegExp(`${escapedSelector}\\s*\\{([\\s\\S]*?)\\}`, "m");
+  const blockMatch = css.match(blockPattern);
+
+  if (!blockMatch) {
+    throw new Error(`Missing CSS block for selector: ${selector}`);
+  }
+
+  return blockMatch[1];
+}
+
 describe("locale transition layer stacking", () => {
   it("keeps the incoming layer above the outgoing layer", () => {
     const previousLayerZIndex = readZIndexForSelector(
@@ -34,5 +47,15 @@ describe("locale transition layer stacking", () => {
     );
 
     expect(currentLayerZIndex).toBeGreaterThan(previousLayerZIndex);
+  });
+
+  it("keeps solid-surface regions opaque during locale transitions", () => {
+    const solidSurfaceBlock = readCssBlock(
+      '[data-locale-root][data-locale-switching="true"] [data-locale-solid-surface]',
+    );
+
+    expect(solidSurfaceBlock).toContain("animation: none;");
+    expect(solidSurfaceBlock).toContain("opacity: 1;");
+    expect(solidSurfaceBlock).toContain("transform: none;");
   });
 });

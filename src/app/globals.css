@@ -137,7 +137,26 @@ img {
   will-change: opacity, transform;
 }
 
+[data-locale-root][data-locale-switching="true"] [data-locale-solid-surface] {
+  animation: none;
+  opacity: 1;
+  transform: none;
+  will-change: auto;
+}
+
+[data-locale-root][data-locale-switching="true"] [data-locale-solid-surface] > [data-locale-surface-content] {
+  animation-duration: var(--locale-transition-duration);
+  animation-fill-mode: both;
+  animation-timing-function: var(--locale-transition-ease);
+  animation-delay: var(--locale-region-delay, 0ms);
+  will-change: opacity, transform;
+}
+
 [data-locale-root][data-locale-switching="true"][data-locale-previous="en"][data-locale-next="zh"] [data-locale-layer="current"] [data-locale-region] {
+  animation-name: locale-region-in-zh;
+}
+
+[data-locale-root][data-locale-switching="true"][data-locale-previous="en"][data-locale-next="zh"] [data-locale-layer="current"] [data-locale-solid-surface] > [data-locale-surface-content] {
   animation-name: locale-region-in-zh;
 }
 
@@ -145,11 +164,23 @@ img {
   animation-name: locale-region-in-en;
 }
 
+[data-locale-root][data-locale-switching="true"][data-locale-previous="zh"][data-locale-next="en"] [data-locale-layer="current"] [data-locale-solid-surface] > [data-locale-surface-content] {
+  animation-name: locale-region-in-en;
+}
+
 [data-locale-root][data-locale-switching="true"][data-locale-previous="en"][data-locale-next="zh"] [data-locale-layer="previous"] [data-locale-region] {
   animation-name: locale-region-out-en;
 }
 
+[data-locale-root][data-locale-switching="true"][data-locale-previous="en"][data-locale-next="zh"] [data-locale-layer="previous"] [data-locale-solid-surface] > [data-locale-surface-content] {
+  animation-name: locale-region-out-en;
+}
+
 [data-locale-root][data-locale-switching="true"][data-locale-previous="zh"][data-locale-next="en"] [data-locale-layer="previous"] [data-locale-region] {
+  animation-name: locale-region-out-zh;
+}
+
+[data-locale-root][data-locale-switching="true"][data-locale-previous="zh"][data-locale-next="en"] [data-locale-layer="previous"] [data-locale-solid-surface] > [data-locale-surface-content] {
   animation-name: locale-region-out-zh;
 }
 

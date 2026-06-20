@@ -30,8 +30,16 @@ export function RecentStreamList({ articles, locale }: RecentStreamListProps) {
   const copy = RECENT_STREAM_COPY[locale];
 
   return (
-    <section className="bg-stone-950 text-stone-100" data-locale-region="main" data-locale-stagger="2">
-      <div className="mx-auto max-w-5xl px-4 py-20 sm:px-6 lg:px-8">
+    <section
+      className="bg-stone-950 text-stone-100"
+      data-locale-region="main"
+      data-locale-solid-surface="dark"
+      data-locale-stagger="2"
+    >
+      <div
+        className="mx-auto max-w-5xl px-4 py-20 sm:px-6 lg:px-8"
+        data-locale-surface-content="true"
+      >
         <div className="grid gap-10 lg:grid-cols-12">
           <div className="lg:col-span-4" data-locale-region="side" data-locale-stagger="3">
             <div className="mb-4 text-[11px] uppercase tracking-[0.24em] text-stone-500">
