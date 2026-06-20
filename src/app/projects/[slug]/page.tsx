@@ -87,5 +87,5 @@ export default async function ProjectPage({ params, searchParams }: ProjectPageP
   });
   const project = await getLocalizedProjectOrNotFound(resolvedParams.slug, locale);
 
-  return <ProjectDetailTemplate project={project} />;
+  return <ProjectDetailTemplate locale={locale} project={project} />;
 }

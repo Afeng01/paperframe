@@ -1,15 +1,23 @@
+import type { Locale } from "@/lib/i18n/locales";
+
 import type { SiteContent } from "@/lib/content/schemas";
 
 type StatsSectionProps = {
+  locale: Locale;
   stats: SiteContent["stats"];
 };
 
-export function StatsSection({ stats }: StatsSectionProps) {
+const STATS_SECTION_COPY = {
+  en: "By the numbers",
+  zh: "数字速览",
+} as const;
+
+export function StatsSection({ locale, stats }: StatsSectionProps) {
   return (
     <section className="border-t border-stone-800 bg-stone-950 text-stone-100">
       <div className="mx-auto max-w-5xl px-4 py-24 sm:px-6 lg:px-8">
         <div className="mb-12 text-[11px] uppercase tracking-[0.24em] text-stone-500">
-          By the numbers
+          {STATS_SECTION_COPY[locale]}
         </div>
         <div className="grid grid-cols-2 gap-10 lg:grid-cols-4 lg:gap-6">
           {stats.map((item) => (

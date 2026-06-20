@@ -1,12 +1,14 @@
-import Link from "next/link";
-
 import type { SiteContent } from "@/lib/content/schemas";
+import type { Locale } from "@/lib/i18n/locales";
+
+import { LocalizedLink } from "@/components/shared/LocalizedLink";
 
 type SiteFooterProps = {
+  locale: Locale;
   site: SiteContent;
 };
 
-export function SiteFooter({ site }: SiteFooterProps) {
+export function SiteFooter({ locale, site }: SiteFooterProps) {
   return (
     <footer className="border-t border-stone-200 bg-white">
       <div className="mx-auto flex max-w-5xl flex-col gap-8 px-4 py-10 sm:px-6 lg:px-8 lg:flex-row lg:items-end lg:justify-between">
@@ -20,9 +22,14 @@ export function SiteFooter({ site }: SiteFooterProps) {
         </div>
         <nav className="flex flex-wrap gap-4 text-[11px] uppercase tracking-[0.24em] text-stone-500">
           {site.footerLinks.map((item) => (
-            <Link key={item.href} className="transition-colors hover:text-stone-950" href={item.href}>
+            <LocalizedLink
+              key={item.href}
+              className="transition-colors hover:text-stone-950"
+              locale={locale}
+              href={item.href}
+            >
               {item.label}
-            </Link>
+            </LocalizedLink>
           ))}
         </nav>
       </div>

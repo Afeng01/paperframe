@@ -64,7 +64,7 @@ export default async function ServicesPage({ searchParams }: ServicesPageProps) 
         title={copy.title}
       />
       <div className="mt-12">
-        <CollectionCardGrid entries={services} hrefBase="/services" />
+        <CollectionCardGrid entries={services} hrefBase="/services" locale={locale} />
       </div>
     </div>
   );

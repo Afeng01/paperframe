@@ -107,9 +107,9 @@ export default async function RootLayout({
     >
       <body className="min-h-full bg-white text-stone-950">
         <div className="flex min-h-full flex-col">
-          <SiteHeader site={site} />
+          <SiteHeader locale={locale} site={site} />
           <main className="flex-1 pt-14">{children}</main>
-          <SiteFooter site={site} />
+          <SiteFooter locale={locale} site={site} />
         </div>
       </body>
     </html>

@@ -87,5 +87,5 @@ export default async function ServicePage({ params, searchParams }: ServicePageP
   });
   const service = await getLocalizedServiceOrNotFound(resolvedParams.slug, locale);
 
-  return <ServiceDetailTemplate service={service} />;
+  return <ServiceDetailTemplate locale={locale} service={service} />;
 }

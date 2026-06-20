@@ -45,14 +45,14 @@ export default async function Home({ searchParams }: HomePageProps) {
 
   return (
     <>
-      <HeroSection site={site} />
-      <FeaturedArticle article={featuredArticle} />
-      <RecentStreamList articles={recentArticles} />
-      <StatsSection stats={site.stats} />
-      <ProjectGrid projects={featuredProjects} />
-      <ServiceGrid services={featuredServices} />
+      <HeroSection locale={locale} site={site} />
+      <FeaturedArticle article={featuredArticle} locale={locale} />
+      <RecentStreamList articles={recentArticles} locale={locale} />
+      <StatsSection locale={locale} stats={site.stats} />
+      <ProjectGrid locale={locale} projects={featuredProjects} />
+      <ServiceGrid locale={locale} services={featuredServices} />
       <QuoteSection quote={site.quote} />
-      <ContactSection contact={site.contact} />
+      <ContactSection contact={site.contact} locale={locale} />
     </>
   );
 }

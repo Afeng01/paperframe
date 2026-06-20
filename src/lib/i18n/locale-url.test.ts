@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { buildLocaleUrl } from "@/lib/i18n/locale-url";
+import { buildLocaleUrl, localizeHref } from "@/lib/i18n/locale-url";
 
 describe("buildLocaleUrl", () => {
   it("appends lang=en when no query exists", () => {
@@ -30,5 +30,26 @@ describe("buildLocaleUrl", () => {
         locale: "zh",
       }),
     ).toBe("/articles?tag=ai&page=2&lang=zh#intro");
+  });
+});
+
+describe("localizeHref", () => {
+  it("adds locale to internal path hrefs", () => {
+    expect(localizeHref("/projects/sample-work", "zh")).toBe(
+      "/projects/sample-work?lang=zh",
+    );
+  });
+
+  it("adds locale to internal hrefs with hashes", () => {
+    expect(localizeHref("/#contact", "zh")).toBe("/?lang=zh#contact");
+  });
+
+  it("leaves external hrefs untouched", () => {
+    expect(localizeHref("https://example.com/work", "zh")).toBe(
+      "https://example.com/work",
+    );
+    expect(localizeHref("mailto:hello@example.com", "zh")).toBe(
+      "mailto:hello@example.com",
+    );
   });
 });

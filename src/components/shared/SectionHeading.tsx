@@ -1,13 +1,22 @@
-import Link from "next/link";
+import type { Locale } from "@/lib/i18n/locales";
+
+import { LocalizedLink } from "@/components/shared/LocalizedLink";
 
 type SectionHeadingProps = {
+  locale: Locale;
   eyebrow: string;
   title: string;
   href?: string;
   ctaLabel?: string;
 };
 
-export function SectionHeading({ eyebrow, title, href, ctaLabel }: SectionHeadingProps) {
+export function SectionHeading({
+  locale,
+  eyebrow,
+  title,
+  href,
+  ctaLabel,
+}: SectionHeadingProps) {
   return (
     <div className="mb-12">
       <div className="mb-4 text-[11px] uppercase tracking-[0.24em] text-stone-500">
@@ -18,12 +27,13 @@ export function SectionHeading({ eyebrow, title, href, ctaLabel }: SectionHeadin
           {title}
         </h2>
         {href && ctaLabel ? (
-          <Link
+          <LocalizedLink
             className="pb-1 text-[11px] uppercase tracking-[0.24em] text-stone-500 transition-colors hover:text-stone-950"
+            locale={locale}
             href={href}
           >
             {ctaLabel}
-          </Link>
+          </LocalizedLink>
         ) : null}
       </div>
     </div>

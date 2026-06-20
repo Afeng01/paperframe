@@ -23,6 +23,28 @@ export function buildLocaleUrl({
   return `${pathname}${query ? `?${query}` : ""}${normalizedHash}`;
 }
 
+const LOCAL_URL_BASE = "https://paperframe.local";
+const EXTERNAL_HREF_PATTERN = /^(?:[a-z][a-z\d+.-]*:|\/\/)/i;
+
+export function localizeHref(href: string, locale: Locale): string {
+  if (!href || href.startsWith("#") || EXTERNAL_HREF_PATTERN.test(href)) {
+    return href;
+  }
+
+  const url = new URL(href, LOCAL_URL_BASE);
+
+  if (url.origin !== LOCAL_URL_BASE) {
+    return href;
+  }
+
+  return buildLocaleUrl({
+    pathname: url.pathname,
+    search: url.search,
+    hash: url.hash,
+    locale,
+  });
+}
+
 function normalizeSearch(search: string | URLSearchParams | undefined): string {
   if (!search) {
     return "";

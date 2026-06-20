@@ -1,10 +1,14 @@
+import type { Locale } from "@/lib/i18n/locales";
+
 import type { SiteContent } from "@/lib/content/schemas";
+import { localizeHref } from "@/lib/i18n/locale-url";
 
 type HeroSectionProps = {
+  locale: Locale;
   site: SiteContent;
 };
 
-export function HeroSection({ site }: HeroSectionProps) {
+export function HeroSection({ locale, site }: HeroSectionProps) {
   return (
     <section className="relative bg-white">
       <div className="mx-auto max-w-5xl px-4 pb-20 pt-14 sm:px-6 lg:px-8">
@@ -27,7 +31,10 @@ export function HeroSection({ site }: HeroSectionProps) {
               </div>
               <div className="mt-1 text-sm text-stone-950">
                 {item.href ? (
-                  <a className="border-b border-stone-300 transition-colors hover:border-stone-950" href={item.href}>
+                  <a
+                    className="border-b border-stone-300 transition-colors hover:border-stone-950"
+                    href={localizeHref(item.href, locale)}
+                  >
                     {item.value}
                   </a>
                 ) : (

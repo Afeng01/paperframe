@@ -64,7 +64,7 @@ export default async function ArticlesPage({ searchParams }: ArticlesPageProps) 
         title={copy.title}
       />
       <div className="mt-12">
-        <StreamList articles={articles} />
+        <StreamList articles={articles} locale={locale} />
       </div>
     </div>
   );

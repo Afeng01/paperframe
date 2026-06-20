@@ -89,5 +89,5 @@ export default async function ArticlePage({ params, searchParams }: ArticlePageP
   });
   const article = await getLocalizedArticleOrNotFound(resolvedParams.slug, locale);
 
-  return <ArticleDetailTemplate article={article} />;
+  return <ArticleDetailTemplate article={article} locale={locale} />;
 }
