@@ -457,35 +457,36 @@ export function createLocalizedContentLoaders(
 }
 
 // These top-level exports are legacy compatibility shims for the current route layer only.
-// New callers should prefer createLocalizedContentLoaders(...), which requires an explicit locale.
-const defaultLoaders = createLocalizedContentLoaders();
-
-export const getSiteContent = defaultLoaders.getSiteContent;
+// They intentionally create a fresh localized loader per call so wrapper behavior stays
+// consistent with the pre-memoization fresh-read semantics.
+export async function getSiteContent(): Promise<SiteContent> {
+  return siteContent;
+}
 
 export function getAboutEntry(): Promise<AboutEntry> {
-  return defaultLoaders.getAboutEntry(DEFAULT_LOCALE);
+  return createLocalizedContentLoaders().getAboutEntry(DEFAULT_LOCALE);
 }
 
 export function getAllArticles(): Promise<ArticleEntry[]> {
-  return defaultLoaders.getAllArticles(DEFAULT_LOCALE);
+  return createLocalizedContentLoaders().getAllArticles(DEFAULT_LOCALE);
 }
 
 export function getAllProjects(): Promise<ProjectEntry[]> {
-  return defaultLoaders.getAllProjects(DEFAULT_LOCALE);
+  return createLocalizedContentLoaders().getAllProjects(DEFAULT_LOCALE);
 }
 
 export function getAllServices(): Promise<ServiceEntry[]> {
-  return defaultLoaders.getAllServices(DEFAULT_LOCALE);
+  return createLocalizedContentLoaders().getAllServices(DEFAULT_LOCALE);
 }
 
 export function getArticleBySlug(slug: string): Promise<ArticleEntry | undefined> {
-  return defaultLoaders.getArticleBySlug(slug, DEFAULT_LOCALE);
+  return createLocalizedContentLoaders().getArticleBySlug(slug, DEFAULT_LOCALE);
 }
 
 export function getProjectBySlug(slug: string): Promise<ProjectEntry | undefined> {
-  return defaultLoaders.getProjectBySlug(slug, DEFAULT_LOCALE);
+  return createLocalizedContentLoaders().getProjectBySlug(slug, DEFAULT_LOCALE);
 }
 
 export function getServiceBySlug(slug: string): Promise<ServiceEntry | undefined> {
-  return defaultLoaders.getServiceBySlug(slug, DEFAULT_LOCALE);
+  return createLocalizedContentLoaders().getServiceBySlug(slug, DEFAULT_LOCALE);
 }

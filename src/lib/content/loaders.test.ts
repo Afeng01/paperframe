@@ -298,4 +298,17 @@ describe("content loaders", () => {
     expect(articles.length).toBeGreaterThan(0);
     expect(articles.every((entry) => entry.locale === "en")).toBe(true);
   });
+
+  it("recreates a fresh loader for each legacy zero-arg wrapper call", async () => {
+    const readFileSpy = vi.spyOn(fs, "readFile");
+
+    try {
+      await getDefaultLocaleArticles();
+      await getDefaultLocaleArticles();
+
+      expect(readFileSpy.mock.calls.length).toBeGreaterThanOrEqual(12);
+    } finally {
+      readFileSpy.mockRestore();
+    }
+  });
 });
