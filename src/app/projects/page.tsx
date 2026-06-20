@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 
 import { CollectionPageHeader } from "@/components/list/CollectionPageHeader";
 import { CollectionCardGrid } from "@/components/list/CollectionCardGrid";
-import { getAllProjects } from "@/lib/content/loaders";
+import { getAllProjects } from "@/lib/content/default-locale-loaders";
 import { buildPageMetadata } from "@/lib/metadata";
 import { selectOrderedProjects } from "@/lib/content/selectors";
 

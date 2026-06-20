@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 
 import { CollectionPageHeader } from "@/components/list/CollectionPageHeader";
 import { StreamList } from "@/components/list/StreamList";
-import { getAllArticles } from "@/lib/content/loaders";
+import { getAllArticles } from "@/lib/content/default-locale-loaders";
 import { buildPageMetadata } from "@/lib/metadata";
 import { selectArticleList } from "@/lib/content/selectors";
 

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 import { RichContentRenderer } from "@/components/shared/RichContentRenderer";
-import { getAboutEntry } from "@/lib/content/loaders";
+import { getAboutEntry } from "@/lib/content/default-locale-loaders";
 import { buildPageMetadata } from "@/lib/metadata";
 
 export async function generateMetadata(): Promise<Metadata> {

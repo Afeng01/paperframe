@@ -6,8 +6,8 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
   createLocalizedContentLoaders,
-  getAllArticles as getDefaultLocaleArticles,
 } from "@/lib/content/loaders";
+import { getAllArticles as getDefaultLocaleArticles } from "@/lib/content/default-locale-loaders";
 
 const articleFrontmatter = {
   summary: "Fixture summary",

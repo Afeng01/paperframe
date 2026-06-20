@@ -6,7 +6,8 @@ import { QuoteSection } from "@/components/home/QuoteSection";
 import { RecentStreamList } from "@/components/home/RecentStreamList";
 import { ServiceGrid } from "@/components/home/ServiceGrid";
 import { StatsSection } from "@/components/home/StatsSection";
-import { getAllArticles, getAllProjects, getAllServices, getSiteContent } from "@/lib/content/loaders";
+import { getAllArticles, getAllProjects, getAllServices } from "@/lib/content/default-locale-loaders";
+import { getSiteContent } from "@/lib/content/loaders";
 import {
   selectFeaturedArticle,
   selectOrderedProjects,

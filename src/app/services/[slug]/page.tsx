@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { ServiceDetailTemplate } from "@/components/detail/ServiceDetailTemplate";
-import { getAllServices, getServiceBySlug } from "@/lib/content/loaders";
+import { getAllServices, getServiceBySlug } from "@/lib/content/default-locale-loaders";
 import { buildPageMetadata } from "@/lib/metadata";
 
 type ServicePageProps = {

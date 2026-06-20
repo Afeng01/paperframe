@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { ArticleDetailTemplate } from "@/components/detail/ArticleDetailTemplate";
-import { getAllArticles, getArticleBySlug } from "@/lib/content/loaders";
+import { getAllArticles, getArticleBySlug } from "@/lib/content/default-locale-loaders";
 import { buildPageMetadata } from "@/lib/metadata";
 
 type ArticlePageProps = {

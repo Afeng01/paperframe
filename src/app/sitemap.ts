@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 
-import { getAllArticles, getAllProjects, getAllServices } from "@/lib/content/loaders";
+import { getAllArticles, getAllProjects, getAllServices } from "@/lib/content/default-locale-loaders";
 import { absoluteUrl } from "@/lib/site-config";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {

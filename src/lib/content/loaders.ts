@@ -451,37 +451,7 @@ export function createLocalizedContentLoaders(
   };
 }
 
-// These top-level exports are legacy compatibility shims for the current route layer only.
-// They intentionally create a fresh localized loader per call so wrapper behavior stays
-// consistent with the pre-memoization fresh-read semantics.
+// Site shell copy remains top-level because it is not part of the localized MDX loader API.
 export async function getSiteContent(): Promise<SiteContent> {
   return siteContent;
-}
-
-export function getAboutEntry(): Promise<AboutEntry> {
-  return createLocalizedContentLoaders().getAboutEntry(DEFAULT_LOCALE);
-}
-
-export function getAllArticles(): Promise<ArticleEntry[]> {
-  return createLocalizedContentLoaders().getAllArticles(DEFAULT_LOCALE);
-}
-
-export function getAllProjects(): Promise<ProjectEntry[]> {
-  return createLocalizedContentLoaders().getAllProjects(DEFAULT_LOCALE);
-}
-
-export function getAllServices(): Promise<ServiceEntry[]> {
-  return createLocalizedContentLoaders().getAllServices(DEFAULT_LOCALE);
-}
-
-export function getArticleBySlug(slug: string): Promise<ArticleEntry | undefined> {
-  return createLocalizedContentLoaders().getArticleBySlug(slug, DEFAULT_LOCALE);
-}
-
-export function getProjectBySlug(slug: string): Promise<ProjectEntry | undefined> {
-  return createLocalizedContentLoaders().getProjectBySlug(slug, DEFAULT_LOCALE);
-}
-
-export function getServiceBySlug(slug: string): Promise<ServiceEntry | undefined> {
-  return createLocalizedContentLoaders().getServiceBySlug(slug, DEFAULT_LOCALE);
 }

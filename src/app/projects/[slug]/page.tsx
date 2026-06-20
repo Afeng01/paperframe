@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { ProjectDetailTemplate } from "@/components/detail/ProjectDetailTemplate";
-import { getAllProjects, getProjectBySlug } from "@/lib/content/loaders";
+import { getAllProjects, getProjectBySlug } from "@/lib/content/default-locale-loaders";
 import { buildPageMetadata } from "@/lib/metadata";
 
 type ProjectPageProps = {
