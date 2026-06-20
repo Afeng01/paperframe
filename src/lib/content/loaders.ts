@@ -152,12 +152,16 @@ function filterEntriesByLocale<T extends LocalizedContentFields>(
   return entries.filter((entry) => entry.locale === locale);
 }
 
-function requireLocale(locale: Locale | undefined, loaderName: string): Locale {
-  if (locale) {
-    return locale;
+function requireLocale(locale: string | undefined, loaderName: string): Locale {
+  if (locale == null) {
+    throw new Error(`Locale is required for localized content loader "${loaderName}"`);
   }
 
-  throw new Error(`Locale is required for localized content loader "${loaderName}"`);
+  if (!isSupportedLocale(locale)) {
+    throw new Error(`Unsupported locale "${locale}" for localized content loader "${loaderName}"`);
+  }
+
+  return locale;
 }
 
 function createMissingLocaleError(
@@ -247,6 +251,41 @@ function assertStableLocalizedSlugs<T extends LocalizedContentFields & { slug: s
         entry.slug,
       );
     }
+  }
+}
+
+function createDuplicateSlugError(
+  collection: string,
+  slug: string,
+  locale: Locale,
+  firstTranslationKey: string,
+  duplicateTranslationKey: string,
+): Error {
+  return new Error(
+    `Duplicate slug "${slug}" for ${collection} locale "${locale}": translationKey "${firstTranslationKey}" conflicts with "${duplicateTranslationKey}".`,
+  );
+}
+
+function assertUniqueSlugsPerLocale<
+  T extends LocalizedContentFields & { slug: string; translationKey: string },
+>(entries: T[], collection: string): void {
+  const slugByLocale = new Map<string, string>();
+
+  for (const entry of entries) {
+    const key = `${entry.locale}::${entry.slug}`;
+    const existingTranslationKey = slugByLocale.get(key);
+
+    if (existingTranslationKey && existingTranslationKey !== entry.translationKey) {
+      throw createDuplicateSlugError(
+        collection,
+        entry.slug,
+        entry.locale,
+        existingTranslationKey,
+        entry.translationKey,
+      );
+    }
+
+    slugByLocale.set(key, entry.translationKey);
   }
 }
 
@@ -348,6 +387,7 @@ export function createContentLoaders(contentRoot = DEFAULT_CONTENT_ROOT): Conten
       );
       assertUniqueLocalizedEntries(entries, "articles");
       assertStableLocalizedSlugs(entries, "articles");
+      assertUniqueSlugsPerLocale(entries, "articles");
 
       return filterEntriesByLocale(entries, requestedLocale);
     },
@@ -359,6 +399,7 @@ export function createContentLoaders(contentRoot = DEFAULT_CONTENT_ROOT): Conten
       );
       assertUniqueLocalizedEntries(entries, "projects");
       assertStableLocalizedSlugs(entries, "projects");
+      assertUniqueSlugsPerLocale(entries, "projects");
 
       return filterEntriesByLocale(entries, requestedLocale);
     },
@@ -370,6 +411,7 @@ export function createContentLoaders(contentRoot = DEFAULT_CONTENT_ROOT): Conten
       );
       assertUniqueLocalizedEntries(entries, "services");
       assertStableLocalizedSlugs(entries, "services");
+      assertUniqueSlugsPerLocale(entries, "services");
 
       return filterEntriesByLocale(entries, requestedLocale);
     },
@@ -381,6 +423,7 @@ export function createContentLoaders(contentRoot = DEFAULT_CONTENT_ROOT): Conten
       );
       assertUniqueLocalizedEntries(entries, "articles");
       assertStableLocalizedSlugs(entries, "articles");
+      assertUniqueSlugsPerLocale(entries, "articles");
 
       return findEntryBySlug(entries, "articles", slug, requestedLocale);
     },
@@ -392,6 +435,7 @@ export function createContentLoaders(contentRoot = DEFAULT_CONTENT_ROOT): Conten
       );
       assertUniqueLocalizedEntries(entries, "projects");
       assertStableLocalizedSlugs(entries, "projects");
+      assertUniqueSlugsPerLocale(entries, "projects");
 
       return findEntryBySlug(entries, "projects", slug, requestedLocale);
     },
@@ -403,6 +447,7 @@ export function createContentLoaders(contentRoot = DEFAULT_CONTENT_ROOT): Conten
       );
       assertUniqueLocalizedEntries(entries, "services");
       assertStableLocalizedSlugs(entries, "services");
+      assertUniqueSlugsPerLocale(entries, "services");
 
       return findEntryBySlug(entries, "services", slug, requestedLocale);
     },

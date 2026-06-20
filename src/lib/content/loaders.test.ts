@@ -92,6 +92,18 @@ describe("content loaders", () => {
     ).rejects.toThrow('Locale is required for localized content loader "getAllArticles"');
   });
 
+  it("rejects unsupported locale values at the core API boundary", async () => {
+    const contentRoot = await createContentRoot();
+
+    await writeArticleFixture(contentRoot, "article-01.en.mdx");
+
+    const loaders = createContentLoaders(contentRoot);
+
+    await expect(
+      (loaders.getAllArticles as unknown as (locale: string) => Promise<unknown>)("fr"),
+    ).rejects.toThrow('Unsupported locale "fr" for localized content loader "getAllArticles"');
+  });
+
   it("selects article-01.en.mdx for locale en", async () => {
     const contentRoot = await createContentRoot();
 
@@ -240,6 +252,25 @@ describe("content loaders", () => {
 
     await expect(loaders.getAllArticles("en")).rejects.toThrow(
       'Slug mismatch for articles translationKey "article-01"',
+    );
+  });
+
+  it("rejects duplicate slugs within the same locale across translation keys", async () => {
+    const contentRoot = await createContentRoot();
+
+    await writeArticleFixture(contentRoot, "article-01.en.mdx", {
+      slug: "shared-article",
+      title: "Article one",
+    });
+    await writeArticleFixture(contentRoot, "article-02.en.mdx", {
+      slug: "shared-article",
+      title: "Article two",
+    });
+
+    const loaders = createContentLoaders(contentRoot);
+
+    await expect(loaders.getAllArticles("en")).rejects.toThrow(
+      'Duplicate slug "shared-article" for articles locale "en"',
     );
   });
 
