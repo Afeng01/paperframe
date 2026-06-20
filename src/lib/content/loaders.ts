@@ -23,6 +23,7 @@ const MDX_EXTENSION = ".mdx";
 const LOCALE_SUFFIX_PATTERN = /^[a-z]{2}(?:-[a-z]{2})?$/i;
 
 type ContentEntry<T> = T & LocalizedContentFields & { body: string };
+type InternalContentEntry<T> = ContentEntry<T> & { sourceFileName: string };
 type FrontmatterParser<T> = (value: unknown) => T;
 
 interface ParsedFileName {
@@ -80,7 +81,7 @@ async function readEntryFile<T>(
   directoryPath: string,
   fileName: string,
   parseFrontmatter: FrontmatterParser<T>,
-): Promise<ContentEntry<T>> {
+): Promise<InternalContentEntry<T>> {
   const fullPath = path.join(directoryPath, fileName);
   const source = await fs.readFile(fullPath, "utf8");
   const { data, content } = matter(source);
@@ -91,6 +92,7 @@ async function readEntryFile<T>(
     locale,
     translationKey,
     body: content.trim(),
+    sourceFileName: fileName,
   };
 }
 
@@ -98,7 +100,7 @@ async function readCollectionEntries<T>(
   contentRoot: string,
   directory: string,
   parseFrontmatter: FrontmatterParser<T>,
-): Promise<Array<ContentEntry<T>>> {
+): Promise<Array<InternalContentEntry<T>>> {
   const collectionDirectory = path.join(contentRoot, directory);
   const fileNames = (await fs.readdir(collectionDirectory)).filter((fileName) =>
     fileName.endsWith(MDX_EXTENSION),
@@ -109,18 +111,44 @@ async function readCollectionEntries<T>(
   );
 }
 
+function isNamedEntryFile(fileName: string, entryName: string): boolean {
+  if (!fileName.endsWith(MDX_EXTENSION)) {
+    return false;
+  }
+
+  return fileName === `${entryName}${MDX_EXTENSION}` || fileName.startsWith(`${entryName}.`);
+}
+
+function assertValidNamedEntryFileName(fileName: string, entryName: string): void {
+  if (fileName === `${entryName}${MDX_EXTENSION}`) {
+    return;
+  }
+
+  const baseName = fileName.slice(0, -MDX_EXTENSION.length);
+
+  if (!baseName.startsWith(`${entryName}.`)) {
+    throw new Error(`Unsupported singleton content file "${fileName}" for entry "${entryName}"`);
+  }
+
+  const suffix = baseName.slice(entryName.length + 1);
+
+  if (!isSupportedLocale(suffix)) {
+    throw new Error(`Unsupported singleton content file "${fileName}" for entry "${entryName}"`);
+  }
+}
+
 async function readNamedEntries<T>(
   contentRoot: string,
   entryName: string,
   parseFrontmatter: FrontmatterParser<T>,
-): Promise<Array<ContentEntry<T>>> {
-  const fileNames = (await fs.readdir(contentRoot)).filter((fileName) => {
-    if (!fileName.endsWith(MDX_EXTENSION)) {
-      return false;
-    }
+): Promise<Array<InternalContentEntry<T>>> {
+  const fileNames = (await fs.readdir(contentRoot)).filter((fileName) =>
+    isNamedEntryFile(fileName, entryName),
+  );
 
-    return fileName === `${entryName}${MDX_EXTENSION}` || fileName.startsWith(`${entryName}.`);
-  });
+  for (const fileName of fileNames) {
+    assertValidNamedEntryFileName(fileName, entryName);
+  }
 
   return Promise.all(fileNames.map((fileName) => readEntryFile(contentRoot, fileName, parseFrontmatter)));
 }
@@ -163,6 +191,42 @@ function createSlugMismatchError(
   return new Error(
     `Slug mismatch for ${collection} translationKey "${translationKey}": expected slug "${expectedSlug}", but locale "${locale}" uses "${actualSlug}".`,
   );
+}
+
+function createDuplicateLocalizedEntryError(
+  collection: string,
+  translationKey: string,
+  locale: Locale,
+  firstFileName: string,
+  duplicateFileName: string,
+): Error {
+  return new Error(
+    `Duplicate localized entry for ${collection} translationKey "${translationKey}" and locale "${locale}": "${firstFileName}" conflicts with "${duplicateFileName}".`,
+  );
+}
+
+function assertUniqueLocalizedEntries<T extends LocalizedContentFields & { sourceFileName: string }>(
+  entries: T[],
+  collection: string,
+): void {
+  const seenEntries = new Map<string, string>();
+
+  for (const entry of entries) {
+    const key = `${entry.translationKey}::${entry.locale}`;
+    const existingFileName = seenEntries.get(key);
+
+    if (existingFileName) {
+      throw createDuplicateLocalizedEntryError(
+        collection,
+        entry.translationKey,
+        entry.locale,
+        existingFileName,
+        entry.sourceFileName,
+      );
+    }
+
+    seenEntries.set(key, entry.sourceFileName);
+  }
 }
 
 function assertStableLocalizedSlugs<T extends LocalizedContentFields & { slug: string }>(
@@ -228,6 +292,7 @@ export function createContentLoaders(contentRoot = DEFAULT_CONTENT_ROOT): Conten
       const entries = await readNamedEntries(contentRoot, "about", (value) =>
         aboutFrontmatterSchema.parse(value),
       );
+      assertUniqueLocalizedEntries(entries, "about");
       const localizedEntry = entries.find((entry) => entry.locale === requestedLocale);
 
       if (localizedEntry) {
@@ -248,6 +313,7 @@ export function createContentLoaders(contentRoot = DEFAULT_CONTENT_ROOT): Conten
       const entries = await readCollectionEntries(contentRoot, "articles", (value) =>
         articleFrontmatterSchema.parse(value),
       );
+      assertUniqueLocalizedEntries(entries, "articles");
       assertStableLocalizedSlugs(entries, "articles");
 
       return filterEntriesByLocale(entries, requestedLocale);
@@ -258,6 +324,7 @@ export function createContentLoaders(contentRoot = DEFAULT_CONTENT_ROOT): Conten
       const entries = await readCollectionEntries(contentRoot, "projects", (value) =>
         projectFrontmatterSchema.parse(value),
       );
+      assertUniqueLocalizedEntries(entries, "projects");
       assertStableLocalizedSlugs(entries, "projects");
 
       return filterEntriesByLocale(entries, requestedLocale);
@@ -268,6 +335,7 @@ export function createContentLoaders(contentRoot = DEFAULT_CONTENT_ROOT): Conten
       const entries = await readCollectionEntries(contentRoot, "services", (value) =>
         serviceFrontmatterSchema.parse(value),
       );
+      assertUniqueLocalizedEntries(entries, "services");
       assertStableLocalizedSlugs(entries, "services");
 
       return filterEntriesByLocale(entries, requestedLocale);
@@ -278,6 +346,7 @@ export function createContentLoaders(contentRoot = DEFAULT_CONTENT_ROOT): Conten
       const entries = await readCollectionEntries(contentRoot, "articles", (value) =>
         articleFrontmatterSchema.parse(value),
       );
+      assertUniqueLocalizedEntries(entries, "articles");
       assertStableLocalizedSlugs(entries, "articles");
 
       return findEntryBySlug(entries, "articles", slug, requestedLocale);
@@ -288,6 +357,7 @@ export function createContentLoaders(contentRoot = DEFAULT_CONTENT_ROOT): Conten
       const entries = await readCollectionEntries(contentRoot, "projects", (value) =>
         projectFrontmatterSchema.parse(value),
       );
+      assertUniqueLocalizedEntries(entries, "projects");
       assertStableLocalizedSlugs(entries, "projects");
 
       return findEntryBySlug(entries, "projects", slug, requestedLocale);
@@ -298,6 +368,7 @@ export function createContentLoaders(contentRoot = DEFAULT_CONTENT_ROOT): Conten
       const entries = await readCollectionEntries(contentRoot, "services", (value) =>
         serviceFrontmatterSchema.parse(value),
       );
+      assertUniqueLocalizedEntries(entries, "services");
       assertStableLocalizedSlugs(entries, "services");
 
       return findEntryBySlug(entries, "services", slug, requestedLocale);

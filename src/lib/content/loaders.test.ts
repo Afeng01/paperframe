@@ -49,6 +49,28 @@ Fixture body for ${fileName}
   await fs.writeFile(path.join(contentRoot, "articles", fileName), source, "utf8");
 }
 
+async function writeAboutFixture(
+  contentRoot: string,
+  fileName: string,
+  overrides: Record<string, unknown> = {},
+): Promise<void> {
+  const frontmatter = {
+    title: "About fixture",
+    summary: "About summary",
+    ...overrides,
+  };
+
+  const source = `---
+title: ${frontmatter.title}
+summary: ${frontmatter.summary}
+---
+
+About body for ${fileName}
+`;
+
+  await fs.writeFile(path.join(contentRoot, fileName), source, "utf8");
+}
+
 afterEach(async () => {
   await Promise.all(
     temporaryDirectories.splice(0).map((directory) =>
@@ -114,6 +136,23 @@ describe("content loaders", () => {
     });
   });
 
+  it("rejects duplicate default-locale siblings for the same translation key", async () => {
+    const contentRoot = await createContentRoot();
+
+    await writeArticleFixture(contentRoot, "article-01.mdx", {
+      title: "Default locale article",
+    });
+    await writeArticleFixture(contentRoot, "article-01.en.mdx", {
+      title: "Explicit English article",
+    });
+
+    const loaders = createContentLoaders(contentRoot);
+
+    await expect(loaders.getAllArticles("en")).rejects.toThrow(
+      'Duplicate localized entry for articles translationKey "article-01" and locale "en"',
+    );
+  });
+
   it("matches the same slug across locales", async () => {
     const contentRoot = await createContentRoot();
 
@@ -168,6 +207,21 @@ describe("content loaders", () => {
 
     await expect(loaders.getAllArticles("en")).rejects.toThrow(
       'Slug mismatch for articles translationKey "article-01"',
+    );
+  });
+
+  it("rejects unsupported singleton suffixes instead of treating them as english about content", async () => {
+    const contentRoot = await createContentRoot();
+
+    await writeAboutFixture(contentRoot, "about.mdx");
+    await writeAboutFixture(contentRoot, "about.draft.mdx", {
+      title: "Draft about",
+    });
+
+    const loaders = createContentLoaders(contentRoot);
+
+    await expect(loaders.getAboutEntry("en")).rejects.toThrow(
+      'Unsupported singleton content file "about.draft.mdx" for entry "about"',
     );
   });
 });
