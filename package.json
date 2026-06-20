@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "description": "Editorial-style personal site template built with Next.js App Router and local MDX collections.",
   "private": true,
+  "engines": {
+    "node": ">=20.19.0"
+  },
   "scripts": {
     "dev": "next dev --webpack",
     "build": "next build",
