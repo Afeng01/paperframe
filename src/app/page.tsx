@@ -1,3 +1,6 @@
+import { cookies } from "next/headers";
+
+import { getSiteContent } from "@/content/site";
 import { ContactSection } from "@/components/home/ContactSection";
 import { FeaturedArticle } from "@/components/home/FeaturedArticle";
 import { HeroSection } from "@/components/home/HeroSection";
@@ -6,8 +9,9 @@ import { QuoteSection } from "@/components/home/QuoteSection";
 import { RecentStreamList } from "@/components/home/RecentStreamList";
 import { ServiceGrid } from "@/components/home/ServiceGrid";
 import { StatsSection } from "@/components/home/StatsSection";
-import { getAllArticles, getAllProjects, getAllServices } from "@/lib/content/default-locale-loaders";
-import { getSiteContent } from "@/lib/content/loaders";
+import { createLocalizedContentLoaders } from "@/lib/content/loaders";
+import { LOCALE_COOKIE_NAME } from "@/lib/i18n/locale-cookie";
+import { resolveLocale } from "@/lib/i18n/resolve-locale";
 import {
   selectFeaturedArticle,
   selectOrderedProjects,
@@ -15,12 +19,23 @@ import {
   selectRecentArticles,
 } from "@/lib/content/selectors";
 
-export default async function Home() {
+type HomePageProps = {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+};
+
+const contentLoaders = createLocalizedContentLoaders();
+
+export default async function Home({ searchParams }: HomePageProps) {
+  const [resolvedSearchParams, cookieStore] = await Promise.all([searchParams, cookies()]);
+  const locale = resolveLocale({
+    resolvedSearchParams,
+    cookieLocale: cookieStore.get(LOCALE_COOKIE_NAME)?.value ?? null,
+  });
   const [site, articles, projects, services] = await Promise.all([
-    getSiteContent(),
-    getAllArticles(),
-    getAllProjects(),
-    getAllServices(),
+    Promise.resolve(getSiteContent(locale)),
+    contentLoaders.getAllArticles(locale),
+    contentLoaders.getAllProjects(locale),
+    contentLoaders.getAllServices(locale),
   ]);
 
   const featuredArticle = selectFeaturedArticle(articles);

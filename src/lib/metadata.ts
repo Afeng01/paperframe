@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 
+import { DEFAULT_LOCALE, type Locale } from "@/lib/i18n/locales";
+import { buildLocaleUrl } from "@/lib/i18n/locale-url";
 import { absoluteUrl, resolveTitle, siteConfig } from "@/lib/site-config";
 
 type PageMetadataInput = {
@@ -8,8 +10,14 @@ type PageMetadataInput = {
   path?: string;
   imagePath?: string;
   keywords?: string[];
+  locale?: Locale;
   type?: "website" | "article";
   publishedTime?: string;
+};
+
+const OPEN_GRAPH_LOCALE_BY_LOCALE: Record<Locale, string> = {
+  en: "en_US",
+  zh: "zh_CN",
 };
 
 export function buildPageMetadata({
@@ -18,10 +26,15 @@ export function buildPageMetadata({
   path = "/",
   imagePath = siteConfig.ogImagePath,
   keywords,
+  locale = DEFAULT_LOCALE,
   type = "website",
   publishedTime,
 }: PageMetadataInput): Metadata {
-  const canonicalUrl = absoluteUrl(path);
+  const canonicalPath = buildLocaleUrl({
+    pathname: path,
+    locale,
+  });
+  const canonicalUrl = absoluteUrl(canonicalPath);
   const imageUrl = absoluteUrl(imagePath);
 
   return {
@@ -36,7 +49,7 @@ export function buildPageMetadata({
       description,
       url: canonicalUrl,
       siteName: siteConfig.name,
-      locale: siteConfig.locale,
+      locale: OPEN_GRAPH_LOCALE_BY_LOCALE[locale],
       type,
       images: [
         {

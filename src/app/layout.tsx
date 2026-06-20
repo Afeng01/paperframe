@@ -1,9 +1,13 @@
 import type { Metadata, Viewport } from "next";
+import { cookies } from "next/headers";
 import { Geist, Geist_Mono, Noto_Serif_SC } from "next/font/google";
 
+import { getSiteContent } from "@/content/site";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
-import { getSiteContent } from "@/lib/content/loaders";
+import { LOCALE_COOKIE_NAME } from "@/lib/i18n/locale-cookie";
+import { resolveLocale } from "@/lib/i18n/resolve-locale";
+import { buildLocaleUrl } from "@/lib/i18n/locale-url";
 import { siteConfig } from "@/lib/site-config";
 
 import "./globals.css";
@@ -24,45 +28,62 @@ const notoSerif = Noto_Serif_SC({
   weight: ["400", "600", "700"],
 });
 
-export const metadata: Metadata = {
-  metadataBase: new URL(siteConfig.url),
-  applicationName: siteConfig.name,
-  title: {
-    default: siteConfig.name,
-    template: `%s | ${siteConfig.name}`,
-  },
-  description: siteConfig.description,
-  keywords: [...siteConfig.keywords],
-  authors: [{ name: siteConfig.author.name }],
-  creator: siteConfig.author.name,
-  publisher: siteConfig.author.name,
-  alternates: {
-    canonical: "/",
-  },
-  openGraph: {
-    title: siteConfig.name,
-    description: siteConfig.description,
-    url: siteConfig.url,
-    siteName: siteConfig.name,
-    locale: siteConfig.locale,
-    type: "website",
-    images: [
-      {
-        url: siteConfig.ogImagePath,
-        width: 1200,
-        height: 630,
-        alt: `${siteConfig.name} preview`,
-      },
-    ],
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: siteConfig.name,
-    description: siteConfig.description,
-    creator: siteConfig.social.xHandle,
-    images: [siteConfig.twitterImagePath],
-  },
-};
+const OPEN_GRAPH_LOCALE_BY_LOCALE = {
+  en: "en_US",
+  zh: "zh_CN",
+} as const;
+
+export async function generateMetadata(): Promise<Metadata> {
+  const cookieStore = await cookies();
+  const locale = resolveLocale({
+    cookieLocale: cookieStore.get(LOCALE_COOKIE_NAME)?.value ?? null,
+  });
+  const site = getSiteContent(locale);
+  const canonicalPath = buildLocaleUrl({
+    pathname: "/",
+    locale,
+  });
+
+  return {
+    metadataBase: new URL(siteConfig.url),
+    applicationName: siteConfig.name,
+    title: {
+      default: siteConfig.name,
+      template: `%s | ${siteConfig.name}`,
+    },
+    description: site.siteSubtitle,
+    keywords: [...siteConfig.keywords],
+    authors: [{ name: siteConfig.author.name }],
+    creator: siteConfig.author.name,
+    publisher: siteConfig.author.name,
+    alternates: {
+      canonical: canonicalPath,
+    },
+    openGraph: {
+      title: siteConfig.name,
+      description: site.siteSubtitle,
+      url: canonicalPath,
+      siteName: siteConfig.name,
+      locale: OPEN_GRAPH_LOCALE_BY_LOCALE[locale],
+      type: "website",
+      images: [
+        {
+          url: siteConfig.ogImagePath,
+          width: 1200,
+          height: 630,
+          alt: `${siteConfig.name} preview`,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: siteConfig.name,
+      description: site.siteSubtitle,
+      creator: siteConfig.social.xHandle,
+      images: [siteConfig.twitterImagePath],
+    },
+  };
+}
 
 export const viewport: Viewport = {
   themeColor: siteConfig.themeColor,
@@ -73,11 +94,15 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const site = await getSiteContent();
+  const cookieStore = await cookies();
+  const locale = resolveLocale({
+    cookieLocale: cookieStore.get(LOCALE_COOKIE_NAME)?.value ?? null,
+  });
+  const site = getSiteContent(locale);
 
   return (
     <html
-      lang={siteConfig.lang}
+      lang={locale}
       className={`${geistSans.variable} ${geistMono.variable} ${notoSerif.variable} h-full antialiased`}
     >
       <body className="min-h-full bg-white text-stone-950">
