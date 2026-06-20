@@ -4,7 +4,10 @@ import path from "node:path";
 
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { createContentLoaders } from "@/lib/content/loaders";
+import {
+  createLocalizedContentLoaders,
+  getAllArticles as getDefaultLocaleArticles,
+} from "@/lib/content/loaders";
 
 const articleFrontmatter = {
   summary: "Fixture summary",
@@ -85,7 +88,7 @@ describe("content loaders", () => {
 
     await writeArticleFixture(contentRoot, "article-01.en.mdx");
 
-    const loaders = createContentLoaders(contentRoot);
+    const loaders = createLocalizedContentLoaders(contentRoot);
 
     await expect(
       (loaders.getAllArticles as unknown as () => Promise<unknown>)(),
@@ -97,7 +100,7 @@ describe("content loaders", () => {
 
     await writeArticleFixture(contentRoot, "article-01.en.mdx");
 
-    const loaders = createContentLoaders(contentRoot);
+    const loaders = createLocalizedContentLoaders(contentRoot);
 
     await expect(
       (loaders.getAllArticles as unknown as (locale: string) => Promise<unknown>)("fr"),
@@ -114,7 +117,7 @@ describe("content loaders", () => {
       title: "Chinese article",
     });
 
-    const loaders = createContentLoaders(contentRoot);
+    const loaders = createLocalizedContentLoaders(contentRoot);
     const articles = await loaders.getAllArticles("en");
 
     expect(articles).toHaveLength(1);
@@ -136,7 +139,7 @@ describe("content loaders", () => {
       title: "Chinese article",
     });
 
-    const loaders = createContentLoaders(contentRoot);
+    const loaders = createLocalizedContentLoaders(contentRoot);
     const articles = await loaders.getAllArticles("zh");
 
     expect(articles).toHaveLength(1);
@@ -158,7 +161,7 @@ describe("content loaders", () => {
       title: "Explicit English article",
     });
 
-    const loaders = createContentLoaders(contentRoot);
+    const loaders = createLocalizedContentLoaders(contentRoot);
 
     await expect(loaders.getAllArticles("en")).rejects.toThrow(
       'Duplicate localized entry for articles translationKey "article-01" and locale "en"',
@@ -171,7 +174,7 @@ describe("content loaders", () => {
 
       await writeArticleFixture(contentRoot, `article-01.${suffix}.mdx`);
 
-      const loaders = createContentLoaders(contentRoot);
+      const loaders = createLocalizedContentLoaders(contentRoot);
 
       await expect(loaders.getAllArticles("en")).rejects.toThrow(
         `Unsupported locale suffix "${suffix}" in content file "article-01.${suffix}.mdx"`,
@@ -186,7 +189,7 @@ describe("content loaders", () => {
     await writeArticleFixture(contentRoot, "article-01.zh.mdx");
 
     const readFileSpy = vi.spyOn(fs, "readFile");
-    const loaders = createContentLoaders(contentRoot);
+    const loaders = createLocalizedContentLoaders(contentRoot);
 
     try {
       await loaders.getAllArticles("en");
@@ -208,7 +211,7 @@ describe("content loaders", () => {
       title: "Chinese article",
     });
 
-    const loaders = createContentLoaders(contentRoot);
+    const loaders = createLocalizedContentLoaders(contentRoot);
     const englishEntry = await loaders.getArticleBySlug("shared-article", "en");
     const chineseEntry = await loaders.getArticleBySlug("shared-article", "zh");
 
@@ -231,7 +234,7 @@ describe("content loaders", () => {
       title: "English article",
     });
 
-    const loaders = createContentLoaders(contentRoot);
+    const loaders = createLocalizedContentLoaders(contentRoot);
 
     await expect(loaders.getArticleBySlug("shared-article", "zh")).rejects.toThrow(
       'Missing locale "zh" for articles slug "shared-article"',
@@ -248,7 +251,7 @@ describe("content loaders", () => {
       slug: "different-article",
     });
 
-    const loaders = createContentLoaders(contentRoot);
+    const loaders = createLocalizedContentLoaders(contentRoot);
 
     await expect(loaders.getAllArticles("en")).rejects.toThrow(
       'Slug mismatch for articles translationKey "article-01"',
@@ -267,7 +270,7 @@ describe("content loaders", () => {
       title: "Article two",
     });
 
-    const loaders = createContentLoaders(contentRoot);
+    const loaders = createLocalizedContentLoaders(contentRoot);
 
     await expect(loaders.getAllArticles("en")).rejects.toThrow(
       'Duplicate slug "shared-article" for articles locale "en"',
@@ -282,10 +285,17 @@ describe("content loaders", () => {
       title: "Draft about",
     });
 
-    const loaders = createContentLoaders(contentRoot);
+    const loaders = createLocalizedContentLoaders(contentRoot);
 
     await expect(loaders.getAboutEntry("en")).rejects.toThrow(
       'Unsupported singleton content file "about.draft.mdx" for entry "about"',
     );
+  });
+
+  it("keeps the legacy zero-arg wrapper defaulting to english content", async () => {
+    const articles = await getDefaultLocaleArticles();
+
+    expect(articles.length).toBeGreaterThan(0);
+    expect(articles.every((entry) => entry.locale === "en")).toBe(true);
   });
 });

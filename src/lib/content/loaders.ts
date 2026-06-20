@@ -312,7 +312,9 @@ function findEntryBySlug<T extends LocalizedContentFields & { slug: string }>(
   return undefined;
 }
 
-export function createContentLoaders(contentRoot = DEFAULT_CONTENT_ROOT): ContentLoaders {
+export function createLocalizedContentLoaders(
+  contentRoot = DEFAULT_CONTENT_ROOT,
+): ContentLoaders {
   const collectionCache = new Map<string, Promise<unknown>>();
   const namedEntryCache = new Map<string, Promise<unknown>>();
 
@@ -455,8 +457,8 @@ export function createContentLoaders(contentRoot = DEFAULT_CONTENT_ROOT): Conten
 }
 
 // These top-level exports are legacy compatibility shims for the current route layer only.
-// New callers should prefer createContentLoaders(...), which requires an explicit locale.
-const defaultLoaders = createContentLoaders();
+// New callers should prefer createLocalizedContentLoaders(...), which requires an explicit locale.
+const defaultLoaders = createLocalizedContentLoaders();
 
 export const getSiteContent = defaultLoaders.getSiteContent;
 
