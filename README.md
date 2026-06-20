@@ -34,8 +34,12 @@ npm run dev
 Default dev URL:
 
 ```text
-http://localhost:3000
+http://127.0.0.1:4321
 ```
+
+`npm run dev` and `npm run start` intentionally keep the repo on a single fixed
+host and port, and shut down leftover Paperframe `next` processes from the same
+repo before starting a fresh instance.
 
 If you prefer the GitHub UI, click `Use this template`, create a new repository,
 then clone that new repository locally.
@@ -117,15 +121,19 @@ If you want a concrete migration sequence, read
 
 ```bash
 npm run dev
+npm run dev:raw
 npm run lint
 npm run typecheck
 npm run build
+npm run start
+npm run start:raw
 ```
 
 `npm run dev` intentionally uses the webpack dev server instead of the default
 Turbopack path because this project renders local MDX through
 `next-mdx-remote/rsc`, and that combination is more stable in webpack for this
-template.
+template. `npm run dev:raw` and `npm run start:raw` are available only when you
+explicitly want the unwrapped Next.js commands.
 
 ## What to customize first
 
