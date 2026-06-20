@@ -11,85 +11,245 @@ import {
   serviceFrontmatterSchema,
   type AboutEntry,
   type ArticleEntry,
+  type LocalizedContentFields,
   type ProjectEntry,
   type ServiceEntry,
   type SiteContent,
 } from "@/lib/content/schemas";
+import { DEFAULT_LOCALE, isSupportedLocale, type Locale } from "@/lib/i18n/locales";
 
-const CONTENT_ROOT = path.join(process.cwd(), "src", "content");
+const DEFAULT_CONTENT_ROOT = path.join(process.cwd(), "src", "content");
+const MDX_EXTENSION = ".mdx";
+const LOCALE_SUFFIX_PATTERN = /^[a-z]{2}(?:-[a-z]{2})?$/i;
 
-async function readCollection<T>(
-  directory: string,
-  parseFrontmatter: (value: unknown) => Omit<T, "body">,
-): Promise<T[]> {
-  const collectionDirectory = path.join(CONTENT_ROOT, directory);
-  const fileNames = (await fs.readdir(collectionDirectory)).filter((fileName) =>
-    fileName.endsWith(".mdx"),
-  );
+type ContentEntry<T> = T & LocalizedContentFields & { body: string };
+type FrontmatterParser<T> = (value: unknown) => T;
 
-  const entries = await Promise.all(
-    fileNames.map(async (fileName) => {
-      const fullPath = path.join(collectionDirectory, fileName);
-      const source = await fs.readFile(fullPath, "utf8");
-      const { data, content } = matter(source);
-
-      return {
-        ...parseFrontmatter(data),
-        body: content.trim(),
-      } as T;
-    }),
-  );
-
-  return entries;
+interface ParsedFileName {
+  locale: Locale;
+  translationKey: string;
 }
 
-export async function getSiteContent(): Promise<SiteContent> {
-  return siteContent;
+export interface ContentLoaders {
+  getSiteContent(): Promise<SiteContent>;
+  getAboutEntry(locale?: Locale): Promise<AboutEntry>;
+  getAllArticles(locale?: Locale): Promise<ArticleEntry[]>;
+  getAllProjects(locale?: Locale): Promise<ProjectEntry[]>;
+  getAllServices(locale?: Locale): Promise<ServiceEntry[]>;
+  getArticleBySlug(slug: string, locale?: Locale): Promise<ArticleEntry | undefined>;
+  getProjectBySlug(slug: string, locale?: Locale): Promise<ProjectEntry | undefined>;
+  getServiceBySlug(slug: string, locale?: Locale): Promise<ServiceEntry | undefined>;
 }
 
-export async function getAboutEntry(): Promise<AboutEntry> {
-  const filePath = path.join(CONTENT_ROOT, "about.mdx");
-  const source = await fs.readFile(filePath, "utf8");
-  const { data, content } = matter(source);
+function parseContentFileName(fileName: string): ParsedFileName {
+  if (!fileName.endsWith(MDX_EXTENSION)) {
+    throw new Error(`Unsupported content file "${fileName}"`);
+  }
+
+  const baseName = fileName.slice(0, -MDX_EXTENSION.length);
+  const lastDotIndex = baseName.lastIndexOf(".");
+
+  if (lastDotIndex === -1) {
+    return {
+      locale: DEFAULT_LOCALE,
+      translationKey: baseName,
+    };
+  }
+
+  const translationKey = baseName.slice(0, lastDotIndex);
+  const localeSuffix = baseName.slice(lastDotIndex + 1);
+
+  if (isSupportedLocale(localeSuffix)) {
+    return {
+      locale: localeSuffix,
+      translationKey,
+    };
+  }
+
+  if (LOCALE_SUFFIX_PATTERN.test(localeSuffix)) {
+    throw new Error(`Unsupported locale suffix "${localeSuffix}" in content file "${fileName}"`);
+  }
 
   return {
-    ...aboutFrontmatterSchema.parse(data),
+    locale: DEFAULT_LOCALE,
+    translationKey: baseName,
+  };
+}
+
+async function readEntryFile<T>(
+  directoryPath: string,
+  fileName: string,
+  parseFrontmatter: FrontmatterParser<T>,
+): Promise<ContentEntry<T>> {
+  const fullPath = path.join(directoryPath, fileName);
+  const source = await fs.readFile(fullPath, "utf8");
+  const { data, content } = matter(source);
+  const { locale, translationKey } = parseContentFileName(fileName);
+
+  return {
+    ...parseFrontmatter(data),
+    locale,
+    translationKey,
     body: content.trim(),
   };
 }
 
-export async function getAllArticles(): Promise<ArticleEntry[]> {
-  return readCollection<ArticleEntry>("articles", (value) =>
-    articleFrontmatterSchema.parse(value),
+async function readCollectionEntries<T>(
+  contentRoot: string,
+  directory: string,
+  parseFrontmatter: FrontmatterParser<T>,
+): Promise<Array<ContentEntry<T>>> {
+  const collectionDirectory = path.join(contentRoot, directory);
+  const fileNames = (await fs.readdir(collectionDirectory)).filter((fileName) =>
+    fileName.endsWith(MDX_EXTENSION),
+  );
+
+  return Promise.all(
+    fileNames.map((fileName) => readEntryFile(collectionDirectory, fileName, parseFrontmatter)),
   );
 }
 
-export async function getAllProjects(): Promise<ProjectEntry[]> {
-  return readCollection<ProjectEntry>("projects", (value) =>
-    projectFrontmatterSchema.parse(value),
+async function readNamedEntries<T>(
+  contentRoot: string,
+  entryName: string,
+  parseFrontmatter: FrontmatterParser<T>,
+): Promise<Array<ContentEntry<T>>> {
+  const fileNames = (await fs.readdir(contentRoot)).filter((fileName) => {
+    if (!fileName.endsWith(MDX_EXTENSION)) {
+      return false;
+    }
+
+    return fileName === `${entryName}${MDX_EXTENSION}` || fileName.startsWith(`${entryName}.`);
+  });
+
+  return Promise.all(fileNames.map((fileName) => readEntryFile(contentRoot, fileName, parseFrontmatter)));
+}
+
+function filterEntriesByLocale<T extends LocalizedContentFields>(
+  entries: T[],
+  locale: Locale,
+): T[] {
+  return entries.filter((entry) => entry.locale === locale);
+}
+
+function createMissingLocaleError(
+  collection: string,
+  slug: string,
+  locale: Locale,
+  availableLocales: Locale[],
+): Error {
+  const locales = Array.from(new Set(availableLocales)).sort().join(", ");
+
+  return new Error(
+    `Missing locale "${locale}" for ${collection} slug "${slug}". Available locales: ${locales}.`,
   );
 }
 
-export async function getAllServices(): Promise<ServiceEntry[]> {
-  return readCollection<ServiceEntry>("services", (value) =>
-    serviceFrontmatterSchema.parse(value),
-  );
+function findEntryBySlug<T extends LocalizedContentFields & { slug: string }>(
+  entries: T[],
+  collection: string,
+  slug: string,
+  locale: Locale,
+): T | undefined {
+  const localizedEntry = entries.find((entry) => entry.slug === slug && entry.locale === locale);
+
+  if (localizedEntry) {
+    return localizedEntry;
+  }
+
+  const siblingLocales = entries
+    .filter((entry) => entry.slug === slug)
+    .map((entry) => entry.locale);
+
+  if (siblingLocales.length > 0) {
+    throw createMissingLocaleError(collection, slug, locale, siblingLocales);
+  }
+
+  return undefined;
 }
 
-export async function getArticleBySlug(slug: string): Promise<ArticleEntry | undefined> {
-  const articles = await getAllArticles();
+export function createContentLoaders(contentRoot = DEFAULT_CONTENT_ROOT): ContentLoaders {
+  return {
+    async getSiteContent() {
+      return siteContent;
+    },
 
-  return articles.find((entry) => entry.slug === slug);
+    async getAboutEntry(locale = DEFAULT_LOCALE) {
+      const entries = await readNamedEntries(contentRoot, "about", (value) =>
+        aboutFrontmatterSchema.parse(value),
+      );
+      const localizedEntry = entries.find((entry) => entry.locale === locale);
+
+      if (localizedEntry) {
+        return localizedEntry;
+      }
+
+      const availableLocales = entries.map((entry) => entry.locale);
+
+      if (availableLocales.length > 0) {
+        throw createMissingLocaleError("about", "about", locale, availableLocales);
+      }
+
+      throw new Error('Missing content entry "about"');
+    },
+
+    async getAllArticles(locale = DEFAULT_LOCALE) {
+      const entries = await readCollectionEntries(contentRoot, "articles", (value) =>
+        articleFrontmatterSchema.parse(value),
+      );
+
+      return filterEntriesByLocale(entries, locale);
+    },
+
+    async getAllProjects(locale = DEFAULT_LOCALE) {
+      const entries = await readCollectionEntries(contentRoot, "projects", (value) =>
+        projectFrontmatterSchema.parse(value),
+      );
+
+      return filterEntriesByLocale(entries, locale);
+    },
+
+    async getAllServices(locale = DEFAULT_LOCALE) {
+      const entries = await readCollectionEntries(contentRoot, "services", (value) =>
+        serviceFrontmatterSchema.parse(value),
+      );
+
+      return filterEntriesByLocale(entries, locale);
+    },
+
+    async getArticleBySlug(slug, locale = DEFAULT_LOCALE) {
+      const entries = await readCollectionEntries(contentRoot, "articles", (value) =>
+        articleFrontmatterSchema.parse(value),
+      );
+
+      return findEntryBySlug(entries, "articles", slug, locale);
+    },
+
+    async getProjectBySlug(slug, locale = DEFAULT_LOCALE) {
+      const entries = await readCollectionEntries(contentRoot, "projects", (value) =>
+        projectFrontmatterSchema.parse(value),
+      );
+
+      return findEntryBySlug(entries, "projects", slug, locale);
+    },
+
+    async getServiceBySlug(slug, locale = DEFAULT_LOCALE) {
+      const entries = await readCollectionEntries(contentRoot, "services", (value) =>
+        serviceFrontmatterSchema.parse(value),
+      );
+
+      return findEntryBySlug(entries, "services", slug, locale);
+    },
+  };
 }
 
-export async function getProjectBySlug(slug: string): Promise<ProjectEntry | undefined> {
-  const projects = await getAllProjects();
+const defaultLoaders = createContentLoaders();
 
-  return projects.find((entry) => entry.slug === slug);
-}
-
-export async function getServiceBySlug(slug: string): Promise<ServiceEntry | undefined> {
-  const services = await getAllServices();
-
-  return services.find((entry) => entry.slug === slug);
-}
+export const getSiteContent = defaultLoaders.getSiteContent;
+export const getAboutEntry = defaultLoaders.getAboutEntry;
+export const getAllArticles = defaultLoaders.getAllArticles;
+export const getAllProjects = defaultLoaders.getAllProjects;
+export const getAllServices = defaultLoaders.getAllServices;
+export const getArticleBySlug = defaultLoaders.getArticleBySlug;
+export const getProjectBySlug = defaultLoaders.getProjectBySlug;
+export const getServiceBySlug = defaultLoaders.getServiceBySlug;

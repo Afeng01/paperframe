@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import type { Locale } from "@/lib/i18n/locales";
+
 const dateFieldSchema = z.union([z.string().min(1), z.date()]).transform((value) => {
   if (typeof value === "string") {
     return value;
@@ -101,18 +103,27 @@ export type ServiceFrontmatter = z.infer<typeof serviceFrontmatterSchema>;
 export type AboutFrontmatter = z.infer<typeof aboutFrontmatterSchema>;
 export type SiteContent = z.infer<typeof siteContentSchema>;
 
-export type ArticleEntry = ArticleFrontmatter & {
+export interface LocalizedContentFields {
+  locale: Locale;
+  translationKey: string;
+}
+
+export type ArticleEntry = ArticleFrontmatter &
+  LocalizedContentFields & {
   body: string;
 };
 
-export type ProjectEntry = ProjectFrontmatter & {
+export type ProjectEntry = ProjectFrontmatter &
+  LocalizedContentFields & {
   body: string;
 };
 
-export type ServiceEntry = ServiceFrontmatter & {
+export type ServiceEntry = ServiceFrontmatter &
+  LocalizedContentFields & {
   body: string;
 };
 
-export type AboutEntry = AboutFrontmatter & {
+export type AboutEntry = AboutFrontmatter &
+  LocalizedContentFields & {
   body: string;
 };

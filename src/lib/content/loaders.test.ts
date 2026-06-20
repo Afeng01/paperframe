@@ -1,0 +1,144 @@
+import fs from "node:fs/promises";
+import os from "node:os";
+import path from "node:path";
+
+import { afterEach, describe, expect, it } from "vitest";
+
+import { createContentLoaders } from "@/lib/content/loaders";
+
+const articleFrontmatter = {
+  summary: "Fixture summary",
+  date: "2026-06-20",
+  category: "Notes",
+};
+
+const temporaryDirectories: string[] = [];
+
+async function createContentRoot(): Promise<string> {
+  const directory = await fs.mkdtemp(path.join(os.tmpdir(), "xiao12-top-content-"));
+
+  temporaryDirectories.push(directory);
+  await fs.mkdir(path.join(directory, "articles"), { recursive: true });
+
+  return directory;
+}
+
+async function writeArticleFixture(
+  contentRoot: string,
+  fileName: string,
+  overrides: Record<string, unknown> = {},
+): Promise<void> {
+  const frontmatter = {
+    title: "Fixture article",
+    slug: "shared-article",
+    ...articleFrontmatter,
+    ...overrides,
+  };
+
+  const source = `---
+title: ${frontmatter.title}
+slug: ${frontmatter.slug}
+summary: ${frontmatter.summary}
+date: ${frontmatter.date}
+category: ${frontmatter.category}
+---
+
+Fixture body for ${fileName}
+`;
+
+  await fs.writeFile(path.join(contentRoot, "articles", fileName), source, "utf8");
+}
+
+afterEach(async () => {
+  await Promise.all(
+    temporaryDirectories.splice(0).map((directory) =>
+      fs.rm(directory, { recursive: true, force: true }),
+    ),
+  );
+});
+
+describe("content loaders", () => {
+  it("selects article-01.en.mdx for locale en", async () => {
+    const contentRoot = await createContentRoot();
+
+    await writeArticleFixture(contentRoot, "article-01.en.mdx", {
+      title: "English article",
+    });
+    await writeArticleFixture(contentRoot, "article-01.zh.mdx", {
+      title: "Chinese article",
+    });
+
+    const loaders = createContentLoaders(contentRoot);
+    const articles = await loaders.getAllArticles("en");
+
+    expect(articles).toHaveLength(1);
+    expect(articles[0]).toMatchObject({
+      title: "English article",
+      slug: "shared-article",
+      locale: "en",
+      translationKey: "article-01",
+    });
+  });
+
+  it("selects article-01.zh.mdx for locale zh", async () => {
+    const contentRoot = await createContentRoot();
+
+    await writeArticleFixture(contentRoot, "article-01.en.mdx", {
+      title: "English article",
+    });
+    await writeArticleFixture(contentRoot, "article-01.zh.mdx", {
+      title: "Chinese article",
+    });
+
+    const loaders = createContentLoaders(contentRoot);
+    const articles = await loaders.getAllArticles("zh");
+
+    expect(articles).toHaveLength(1);
+    expect(articles[0]).toMatchObject({
+      title: "Chinese article",
+      slug: "shared-article",
+      locale: "zh",
+      translationKey: "article-01",
+    });
+  });
+
+  it("matches the same slug across locales", async () => {
+    const contentRoot = await createContentRoot();
+
+    await writeArticleFixture(contentRoot, "article-01.en.mdx", {
+      title: "English article",
+    });
+    await writeArticleFixture(contentRoot, "article-01.zh.mdx", {
+      title: "Chinese article",
+    });
+
+    const loaders = createContentLoaders(contentRoot);
+    const englishEntry = await loaders.getArticleBySlug("shared-article", "en");
+    const chineseEntry = await loaders.getArticleBySlug("shared-article", "zh");
+
+    expect(englishEntry).toMatchObject({
+      slug: "shared-article",
+      locale: "en",
+      translationKey: "article-01",
+    });
+    expect(chineseEntry).toMatchObject({
+      slug: "shared-article",
+      locale: "zh",
+      translationKey: "article-01",
+    });
+  });
+
+  it("throws a useful error when the requested locale file is missing", async () => {
+    const contentRoot = await createContentRoot();
+
+    await writeArticleFixture(contentRoot, "article-01.en.mdx", {
+      title: "English article",
+    });
+
+    const loaders = createContentLoaders(contentRoot);
+
+    await expect(loaders.getArticleBySlug("shared-article", "zh")).rejects.toThrow(
+      'Missing locale "zh" for articles slug "shared-article"',
+    );
+  });
+});

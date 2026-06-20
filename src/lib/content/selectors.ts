@@ -1,5 +1,6 @@
 import type { ArticleEntry, ProjectEntry, ServiceEntry } from "@/lib/content/schemas";
 
+// Callers are expected to pass entries that are already filtered to a single locale.
 function sortByDateDescending<T extends { date?: string }>(entries: T[]): T[] {
   return [...entries].sort((left, right) => {
     const leftValue = left.date ? new Date(left.date).getTime() : 0;
