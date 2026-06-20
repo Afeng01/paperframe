@@ -5,6 +5,7 @@ import { useState, useTransition } from "react";
 
 import { serializeLocaleCookie } from "@/lib/i18n/locale-cookie";
 import { type Locale } from "@/lib/i18n/locales";
+import { savePendingLocaleTransition } from "@/lib/i18n/locale-transition";
 import { buildLocaleUrl } from "@/lib/i18n/locale-url";
 
 type LanguageToggleProps = {
@@ -42,6 +43,7 @@ export function LanguageToggle({ locale }: LanguageToggleProps) {
     });
 
     document.cookie = serializeLocaleCookie(nextLocale);
+    savePendingLocaleTransition(locale, nextLocale);
     setPendingLocale(nextLocale);
 
     startTransition(() => {

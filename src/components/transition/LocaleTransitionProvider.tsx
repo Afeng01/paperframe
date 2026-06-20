@@ -3,6 +3,10 @@
 import { useEffect, useRef, useState } from "react";
 
 import type { Locale } from "@/lib/i18n/locales";
+import {
+  clearPendingLocaleTransition,
+  readPendingLocaleTransition,
+} from "@/lib/i18n/locale-transition";
 
 type LocaleTransitionProviderProps = {
   children: React.ReactNode;
@@ -31,6 +35,23 @@ export function LocaleTransitionProvider({
   });
   const clearTimerRef = useRef<number | null>(null);
   const transitionIdRef = useRef(0);
+
+  function scheduleTransitionCleanup(previous: Locale, next: Locale, transitionId: number) {
+    clearTimerRef.current = window.setTimeout(() => {
+      if (transitionIdRef.current !== transitionId) {
+        return;
+      }
+
+      setPreviousChildren(null);
+      setTransition({
+        next,
+        previous: next,
+        switching: false,
+      });
+      clearPendingLocaleTransition();
+      clearTimerRef.current = null;
+    }, SWITCH_CLEAR_DELAY_MS);
+  }
 
   useEffect(() => {
     if (locale !== renderedLocale) {
@@ -74,22 +95,38 @@ export function LocaleTransitionProvider({
       });
       setRenderedLocale(next);
       setCurrentChildren(children);
-
-      clearTimerRef.current = window.setTimeout(() => {
-        if (transitionIdRef.current !== transitionId) {
-          return;
-        }
-
-        setPreviousChildren(null);
-        setTransition({
-          next,
-          previous: next,
-          switching: false,
-        });
-        clearTimerRef.current = null;
-      }, SWITCH_CLEAR_DELAY_MS);
+      scheduleTransitionCleanup(previous, next, transitionId);
     });
   }, [children, currentChildren, locale, renderedLocale]);
+
+  useEffect(() => {
+    if (locale !== renderedLocale || transition.switching) {
+      return;
+    }
+
+    const pendingTransition = readPendingLocaleTransition();
+
+    if (!pendingTransition || pendingTransition.next !== locale || pendingTransition.previous === locale) {
+      return;
+    }
+
+    if (clearTimerRef.current != null) {
+      window.clearTimeout(clearTimerRef.current);
+      clearTimerRef.current = null;
+    }
+
+    transitionIdRef.current += 1;
+    const transitionId = transitionIdRef.current;
+
+    queueMicrotask(() => {
+      setTransition({
+        next: pendingTransition.next,
+        previous: pendingTransition.previous,
+        switching: true,
+      });
+      scheduleTransitionCleanup(pendingTransition.previous, pendingTransition.next, transitionId);
+    });
+  }, [locale, renderedLocale, transition.switching]);
 
   return (
     <div

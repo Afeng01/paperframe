@@ -7,6 +7,7 @@ import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { LanguageToggle } from "@/components/layout/LanguageToggle";
+import { LOCALE_TRANSITION_STORAGE_KEY } from "@/lib/i18n/locale-transition";
 
 const replaceMock = vi.fn();
 
@@ -34,6 +35,8 @@ describe("LanguageToggle", () => {
       scroll: false,
     });
     expect(document.cookie).toContain("paperframe-locale=zh");
+    expect(window.sessionStorage.getItem(LOCALE_TRANSITION_STORAGE_KEY)).toContain('"previous":"en"');
+    expect(window.sessionStorage.getItem(LOCALE_TRANSITION_STORAGE_KEY)).toContain('"next":"zh"');
     expect(screen.getByRole("button", { name: "切换到中文" })).toHaveAttribute(
       "aria-pressed",
       "true",
