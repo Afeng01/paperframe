@@ -19,7 +19,7 @@ describe("locales", () => {
 describe("resolveLocale", () => {
   it("prefers the lang query over the cookie locale", () => {
     const locale = resolveLocale({
-      searchParams: new URLSearchParams("lang=zh"),
+      resolvedSearchParams: new URLSearchParams("lang=zh"),
       cookieLocale: "en",
     });
 
@@ -28,7 +28,7 @@ describe("resolveLocale", () => {
 
   it("prefers the cookie locale when the query is absent", () => {
     const locale = resolveLocale({
-      searchParams: new URLSearchParams("page=1"),
+      resolvedSearchParams: new URLSearchParams("page=1"),
       cookieLocale: "zh",
     });
 
@@ -37,7 +37,7 @@ describe("resolveLocale", () => {
 
   it("falls back to en for invalid query and cookie values", () => {
     const locale = resolveLocale({
-      searchParams: new URLSearchParams("lang=fr"),
+      resolvedSearchParams: new URLSearchParams("lang=fr"),
       cookieLocale: "jp",
     });
 
@@ -46,7 +46,7 @@ describe("resolveLocale", () => {
 
   it("supports object-style searchParams values", () => {
     const locale = resolveLocale({
-      searchParams: {
+      resolvedSearchParams: {
         lang: "zh",
       },
       cookieLocale: "en",
@@ -57,7 +57,7 @@ describe("resolveLocale", () => {
 
   it("uses the first object-style string[] lang value", () => {
     const locale = resolveLocale({
-      searchParams: {
+      resolvedSearchParams: {
         lang: ["zh", "en"],
       },
       cookieLocale: "en",

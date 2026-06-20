@@ -1,25 +1,25 @@
 import { DEFAULT_LOCALE, isSupportedLocale, type Locale } from "@/lib/i18n/locales";
 
-type SearchParamsInput =
+type ResolvedSearchParamsInput =
   | URLSearchParams
   | Record<string, string | string[] | undefined>
   | undefined;
 
 export interface ResolveLocaleOptions {
-  searchParams?: SearchParamsInput;
+  resolvedSearchParams?: ResolvedSearchParamsInput;
   cookieLocale?: string | null;
 }
 
-function readLangSearchParam(searchParams: SearchParamsInput): string | null {
-  if (!searchParams) {
+function readLangSearchParam(resolvedSearchParams: ResolvedSearchParamsInput): string | null {
+  if (!resolvedSearchParams) {
     return null;
   }
 
-  if (searchParams instanceof URLSearchParams) {
-    return searchParams.get("lang");
+  if (resolvedSearchParams instanceof URLSearchParams) {
+    return resolvedSearchParams.get("lang");
   }
 
-  const value = searchParams.lang;
+  const value = resolvedSearchParams.lang;
 
   if (Array.isArray(value)) {
     return value[0] ?? null;
@@ -29,10 +29,10 @@ function readLangSearchParam(searchParams: SearchParamsInput): string | null {
 }
 
 export function resolveLocale({
-  searchParams,
+  resolvedSearchParams,
   cookieLocale,
 }: ResolveLocaleOptions): Locale {
-  const queryLocale = readLangSearchParam(searchParams);
+  const queryLocale = readLangSearchParam(resolvedSearchParams);
 
   if (isSupportedLocale(queryLocale)) {
     return queryLocale;
