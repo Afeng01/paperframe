@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
 
+import { PublicSiteShell } from "@/components/layout/PublicSiteShell";
 import { CollectionPageHeader } from "@/components/list/CollectionPageHeader";
 import { CollectionCardGrid } from "@/components/list/CollectionCardGrid";
 import { createLocalizedContentLoaders } from "@/lib/content/loaders";
@@ -57,15 +58,17 @@ export default async function ProjectsPage({ searchParams }: ProjectsPageProps) 
   const copy = PROJECTS_COPY[locale];
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
-      <CollectionPageHeader
-        eyebrow={copy.eyebrow}
-        summary={copy.summary}
-        title={copy.title}
-      />
-      <div className="mt-12">
-        <CollectionCardGrid entries={projects} hrefBase="/projects" locale={locale} />
+    <PublicSiteShell locale={locale}>
+      <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
+        <CollectionPageHeader
+          eyebrow={copy.eyebrow}
+          summary={copy.summary}
+          title={copy.title}
+        />
+        <div className="mt-12">
+          <CollectionCardGrid entries={projects} hrefBase="/projects" locale={locale} />
+        </div>
       </div>
-    </div>
+    </PublicSiteShell>
   );
 }

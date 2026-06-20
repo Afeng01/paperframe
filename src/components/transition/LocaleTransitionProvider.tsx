@@ -54,6 +54,10 @@ export function LocaleTransitionProvider({
   }
 
   useEffect(() => {
+    document.documentElement.lang = locale;
+  }, [locale]);
+
+  useEffect(() => {
     if (locale !== renderedLocale) {
       return;
     }

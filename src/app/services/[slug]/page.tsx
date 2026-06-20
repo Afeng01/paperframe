@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 
+import { PublicSiteShell } from "@/components/layout/PublicSiteShell";
 import { ServiceDetailTemplate } from "@/components/detail/ServiceDetailTemplate";
 import { createLocalizedContentLoaders } from "@/lib/content/loaders";
 import { LOCALE_COOKIE_NAME } from "@/lib/i18n/locale-cookie";
@@ -87,5 +88,9 @@ export default async function ServicePage({ params, searchParams }: ServicePageP
   });
   const service = await getLocalizedServiceOrNotFound(resolvedParams.slug, locale);
 
-  return <ServiceDetailTemplate locale={locale} service={service} />;
+  return (
+    <PublicSiteShell locale={locale}>
+      <ServiceDetailTemplate locale={locale} service={service} />
+    </PublicSiteShell>
+  );
 }

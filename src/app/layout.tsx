@@ -3,9 +3,6 @@ import { cookies } from "next/headers";
 import { Geist, Geist_Mono, Noto_Serif_SC } from "next/font/google";
 
 import { getSiteContent } from "@/content/site";
-import { SiteFooter } from "@/components/layout/SiteFooter";
-import { SiteHeader } from "@/components/layout/SiteHeader";
-import { LocaleTransitionProvider } from "@/components/transition/LocaleTransitionProvider";
 import { LOCALE_COOKIE_NAME } from "@/lib/i18n/locale-cookie";
 import { resolveLocale } from "@/lib/i18n/resolve-locale";
 import { buildLocaleUrl } from "@/lib/i18n/locale-url";
@@ -99,28 +96,13 @@ export default async function RootLayout({
   const locale = resolveLocale({
     cookieLocale: cookieStore.get(LOCALE_COOKIE_NAME)?.value ?? null,
   });
-  const site = getSiteContent(locale);
 
   return (
     <html
       lang={locale}
       className={`${geistSans.variable} ${geistMono.variable} ${notoSerif.variable} h-full antialiased`}
     >
-      <body className="min-h-full bg-white text-stone-950">
-        <LocaleTransitionProvider locale={locale}>
-          <div className="flex min-h-full flex-col">
-            <div data-locale-region="header" data-locale-stagger="0">
-              <SiteHeader locale={locale} site={site} />
-            </div>
-            <main className="flex-1 pt-14" data-locale-region="main" data-locale-stagger="1">
-              {children}
-            </main>
-            <div data-locale-region="footer" data-locale-stagger="9">
-              <SiteFooter locale={locale} site={site} />
-            </div>
-          </div>
-        </LocaleTransitionProvider>
-      </body>
+      <body className="min-h-full bg-white text-stone-950">{children}</body>
     </html>
   );
 }

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
 
+import { PublicSiteShell } from "@/components/layout/PublicSiteShell";
 import { CollectionPageHeader } from "@/components/list/CollectionPageHeader";
 import { StreamList } from "@/components/list/StreamList";
 import { createLocalizedContentLoaders } from "@/lib/content/loaders";
@@ -57,15 +58,17 @@ export default async function ArticlesPage({ searchParams }: ArticlesPageProps) 
   const copy = ARTICLES_COPY[locale];
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
-      <CollectionPageHeader
-        eyebrow={copy.eyebrow}
-        summary={copy.summary}
-        title={copy.title}
-      />
-      <div className="mt-12">
-        <StreamList articles={articles} locale={locale} />
+    <PublicSiteShell locale={locale}>
+      <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
+        <CollectionPageHeader
+          eyebrow={copy.eyebrow}
+          summary={copy.summary}
+          title={copy.title}
+        />
+        <div className="mt-12">
+          <StreamList articles={articles} locale={locale} />
+        </div>
       </div>
-    </div>
+    </PublicSiteShell>
   );
 }

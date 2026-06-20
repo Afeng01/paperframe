@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import Link from "next/link";
 
+import { PublicSiteShell } from "@/components/layout/PublicSiteShell";
 import { LOCALE_COOKIE_NAME } from "@/lib/i18n/locale-cookie";
 import { resolveLocale } from "@/lib/i18n/resolve-locale";
 import { buildLocaleUrl } from "@/lib/i18n/locale-url";
@@ -37,26 +38,30 @@ export default async function NotFound() {
   const copy = NOT_FOUND_COPY[locale];
 
   return (
-    <div className="mx-auto flex min-h-[70vh] max-w-3xl flex-col justify-center px-4 py-20 sm:px-6 lg:px-8">
-      <div className="text-[11px] uppercase tracking-[0.24em] text-stone-500">{copy.eyebrow}</div>
-      <h1 className="mt-4 font-[family-name:var(--font-serif)] text-5xl font-semibold tracking-tight text-stone-950 sm:text-6xl">
-        {copy.title}
-      </h1>
-      <p className="mt-6 max-w-2xl text-lg leading-8 text-stone-600">{copy.description}</p>
-      <div className="mt-10 flex flex-wrap gap-3">
-        {copy.suggestedRoutes.map((route) => (
-          <Link
-            key={route.href}
-            className="border border-stone-300 px-4 py-2 text-sm font-medium text-stone-950 transition-colors hover:border-stone-950 hover:bg-stone-950 hover:text-white"
-            href={buildLocaleUrl({
-              pathname: route.href,
-              locale,
-            })}
-          >
-            {route.label}
-          </Link>
-        ))}
+    <PublicSiteShell locale={locale}>
+      <div className="mx-auto flex min-h-[70vh] max-w-3xl flex-col justify-center px-4 py-20 sm:px-6 lg:px-8">
+        <div className="text-[11px] uppercase tracking-[0.24em] text-stone-500">
+          {copy.eyebrow}
+        </div>
+        <h1 className="mt-4 font-[family-name:var(--font-serif)] text-5xl font-semibold tracking-tight text-stone-950 sm:text-6xl">
+          {copy.title}
+        </h1>
+        <p className="mt-6 max-w-2xl text-lg leading-8 text-stone-600">{copy.description}</p>
+        <div className="mt-10 flex flex-wrap gap-3">
+          {copy.suggestedRoutes.map((route) => (
+            <Link
+              key={route.href}
+              className="border border-stone-300 px-4 py-2 text-sm font-medium text-stone-950 transition-colors hover:border-stone-950 hover:bg-stone-950 hover:text-white"
+              href={buildLocaleUrl({
+                pathname: route.href,
+                locale,
+              })}
+            >
+              {route.label}
+            </Link>
+          ))}
+        </div>
       </div>
-    </div>
+    </PublicSiteShell>
   );
 }

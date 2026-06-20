@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 
+import { PublicSiteShell } from "@/components/layout/PublicSiteShell";
 import { ProjectDetailTemplate } from "@/components/detail/ProjectDetailTemplate";
 import { createLocalizedContentLoaders } from "@/lib/content/loaders";
 import { LOCALE_COOKIE_NAME } from "@/lib/i18n/locale-cookie";
@@ -87,5 +88,9 @@ export default async function ProjectPage({ params, searchParams }: ProjectPageP
   });
   const project = await getLocalizedProjectOrNotFound(resolvedParams.slug, locale);
 
-  return <ProjectDetailTemplate locale={locale} project={project} />;
+  return (
+    <PublicSiteShell locale={locale}>
+      <ProjectDetailTemplate locale={locale} project={project} />
+    </PublicSiteShell>
+  );
 }

@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 
 import { ArticleDetailTemplate } from "@/components/detail/ArticleDetailTemplate";
+import { PublicSiteShell } from "@/components/layout/PublicSiteShell";
 import { createLocalizedContentLoaders } from "@/lib/content/loaders";
 import { LOCALE_COOKIE_NAME } from "@/lib/i18n/locale-cookie";
 import { DEFAULT_LOCALE, type Locale } from "@/lib/i18n/locales";
@@ -89,5 +90,9 @@ export default async function ArticlePage({ params, searchParams }: ArticlePageP
   });
   const article = await getLocalizedArticleOrNotFound(resolvedParams.slug, locale);
 
-  return <ArticleDetailTemplate article={article} locale={locale} />;
+  return (
+    <PublicSiteShell locale={locale}>
+      <ArticleDetailTemplate article={article} locale={locale} />
+    </PublicSiteShell>
+  );
 }

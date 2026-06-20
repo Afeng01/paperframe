@@ -14,6 +14,7 @@ import {
 describe("LocaleTransitionProvider", () => {
   beforeEach(() => {
     window.sessionStorage.clear();
+    document.documentElement.lang = "en";
   });
 
   it("replays an incoming transition after navigation remount", async () => {
@@ -39,5 +40,15 @@ describe("LocaleTransitionProvider", () => {
       { timeout: 1200 },
     );
     expect(window.sessionStorage.getItem(LOCALE_TRANSITION_STORAGE_KEY)).toBeNull();
+  });
+
+  it("keeps the document lang attribute aligned with the active locale", async () => {
+    render(
+      <LocaleTransitionProvider locale="zh">
+        <div data-locale-region="main">中文内容</div>
+      </LocaleTransitionProvider>,
+    );
+
+    await waitFor(() => expect(document.documentElement.lang).toBe("zh"));
   });
 });
