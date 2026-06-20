@@ -1,7 +1,10 @@
-import { cookies } from "next/headers";
+"use client";
+
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 
 import { LOCALE_COOKIE_NAME } from "@/lib/i18n/locale-cookie";
+import { DEFAULT_LOCALE, isSupportedLocale } from "@/lib/i18n/locales";
 import { resolveLocale } from "@/lib/i18n/resolve-locale";
 import { buildLocaleUrl } from "@/lib/i18n/locale-url";
 
@@ -29,12 +32,33 @@ const NOT_FOUND_COPY = {
   },
 } as const;
 
-export default async function NotFound() {
-  const cookieStore = await cookies();
+function readLocaleCookie(): string | null {
+  if (typeof document === "undefined") {
+    return null;
+  }
+
+  const cookiePrefix = `${LOCALE_COOKIE_NAME}=`;
+
+  for (const cookiePart of document.cookie.split(";")) {
+    const trimmed = cookiePart.trim();
+
+    if (!trimmed.startsWith(cookiePrefix)) {
+      continue;
+    }
+
+    return decodeURIComponent(trimmed.slice(cookiePrefix.length));
+  }
+
+  return null;
+}
+
+export default function NotFound() {
+  const searchParams = useSearchParams();
   const locale = resolveLocale({
-    cookieLocale: cookieStore.get(LOCALE_COOKIE_NAME)?.value ?? null,
+    resolvedSearchParams: searchParams,
+    cookieLocale: readLocaleCookie(),
   });
-  const copy = NOT_FOUND_COPY[locale];
+  const copy = NOT_FOUND_COPY[isSupportedLocale(locale) ? locale : DEFAULT_LOCALE];
 
   return (
     <div className="mx-auto flex min-h-[70vh] max-w-3xl flex-col justify-center px-4 py-20 sm:px-6 lg:px-8">

@@ -5,7 +5,7 @@ import { notFound } from "next/navigation";
 import { ArticleDetailTemplate } from "@/components/detail/ArticleDetailTemplate";
 import { createLocalizedContentLoaders } from "@/lib/content/loaders";
 import { LOCALE_COOKIE_NAME } from "@/lib/i18n/locale-cookie";
-import { DEFAULT_LOCALE } from "@/lib/i18n/locales";
+import { DEFAULT_LOCALE, type Locale } from "@/lib/i18n/locales";
 import { resolveLocale } from "@/lib/i18n/resolve-locale";
 import { buildPageMetadata } from "@/lib/metadata";
 
@@ -17,6 +17,33 @@ type ArticlePageProps = {
 };
 
 const contentLoaders = createLocalizedContentLoaders();
+
+function isMissingLocalizedArticleError(error: unknown, slug: string, locale: Locale): boolean {
+  return (
+    error instanceof Error &&
+    error.message.startsWith(
+      `Missing locale "${locale}" for articles slug "${slug}". Available locales: `,
+    )
+  );
+}
+
+async function getLocalizedArticleOrNotFound(slug: string, locale: Locale) {
+  try {
+    const article = await contentLoaders.getArticleBySlug(slug, locale);
+
+    if (!article) {
+      notFound();
+    }
+
+    return article;
+  } catch (error) {
+    if (isMissingLocalizedArticleError(error, slug, locale)) {
+      notFound();
+    }
+
+    throw error;
+  }
+}
 
 export async function generateStaticParams() {
   const articles = await contentLoaders.getAllArticles(DEFAULT_LOCALE);
@@ -37,11 +64,7 @@ export async function generateMetadata({
     resolvedSearchParams,
     cookieLocale: cookieStore.get(LOCALE_COOKIE_NAME)?.value ?? null,
   });
-  const article = await contentLoaders.getArticleBySlug(resolvedParams.slug, locale);
-
-  if (!article) {
-    notFound();
-  }
+  const article = await getLocalizedArticleOrNotFound(resolvedParams.slug, locale);
 
   return buildPageMetadata({
     title: article.title,
@@ -64,11 +87,7 @@ export default async function ArticlePage({ params, searchParams }: ArticlePageP
     resolvedSearchParams,
     cookieLocale: cookieStore.get(LOCALE_COOKIE_NAME)?.value ?? null,
   });
-  const article = await contentLoaders.getArticleBySlug(resolvedParams.slug, locale);
-
-  if (!article) {
-    notFound();
-  }
+  const article = await getLocalizedArticleOrNotFound(resolvedParams.slug, locale);
 
   return <ArticleDetailTemplate article={article} />;
 }
